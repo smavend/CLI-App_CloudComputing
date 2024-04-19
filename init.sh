@@ -25,14 +25,14 @@ validation_node() {
 
 validation_wget() {
     if command -v wget &> /dev/null; then
+        echo "Instalando wget para descargar nvm mediante enlace público................../"
+        apt install wget -y
+        validation_wget
+    else
         echo "Descargando nvm desde enlace público......................................../"
         wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
         export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         validation_nvm
-    else
-        echo "Instalando wget para descargar nvm mediante enlace público................../"
-        apt install wget -y
-        validation_wget
     fi
 }
 
