@@ -28,7 +28,9 @@ validation_wget() {
     if command -v wget &> /dev/null; then
         echo "Descargando nvm desde enlace público......................................../"
         wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
         validation_nvm
     else
         echo "Instalando wget para descargar nvm mediante enlace público................../"
@@ -38,7 +40,8 @@ validation_wget() {
 }
 
 validation_nvm() {
-    if command -v nvm &> /dev/null; then
+    nvm_path=$(command -v nvm) 
+    if [ "$nvm_path" == "nvm" ]; then
         versions=($(nvm ls | grep -o '\bv[0-9]*\.[0-9]*\.[0-9]*\b' | sed 's/^.//'))
         version="none"
         for ver in "${versions[@]}"; do
@@ -60,6 +63,7 @@ validation_nvm() {
             validation_node
         fi
     else
+        echo "nvm no instalada"
         validation_wget
     fi
 }
