@@ -3,7 +3,6 @@
 import inquirer from 'inquirer';
 import figlet from 'figlet';
 import { createSpinner } from 'nanospinner';
-import { menu_admin } from './menu_admin';
 
 // for loading animation
 const sleep = (ms = 500) => new Promise((r) => setTimeout(r, ms));
@@ -98,6 +97,33 @@ export const options_admin = [
         ]
     }
 ]
+
+// actions if admin user
+function menu_admin(user){
+    inquirer
+    .prompt(options_admin).then(answers => {
+        switch(answers.options_admin){
+            case "list_slice":
+                break;
+            case "new_slice":
+                break;
+            case "new_user":
+                break;
+            case "edit_rules":
+                break;
+            case "trbshoot":
+                break;
+            case "list_consumption":
+                break;
+            case "update_pswd":
+                break;
+            case "logout":
+                break;
+            case "help":
+                break;
+        }
+    })
+}
 
 // options for client menu
 const options_client = [
