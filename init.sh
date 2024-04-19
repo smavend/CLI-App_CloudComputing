@@ -14,10 +14,8 @@ validation_node() {
         if [ "$node_version" -ge 16 ]; then
             echo "Requerimiento de node cumplido............................................../"
             npm i
-
-            echo "
+            echo "\n\nPrograma listo///////////////////////////////////////////////////////////////"
         else
-            echo "Validacion de nvm"
             validation_nvm
         fi
     else
@@ -28,14 +26,14 @@ validation_node() {
 
 validation_wget() {
     if command -v wget &> /dev/null; then
-        echo "Descargando nvm desde enlace público......................................../"
+        echo "Descargando nvm desde enlace público........................................~"
         wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
         validation_nvm
     else
-        echo "Instalando wget para descargar nvm mediante enlace público................../"
+        echo "Instalando wget para descargar nvm mediante enlace público..................~"
         apt install wget -y
         validation_wget
     fi
@@ -53,19 +51,19 @@ validation_nvm() {
                 break
             fi
         done
-        echo "Verificando versiones instaladas............................................."
+        echo "Verificando versiones instaladas............................................~"
         if [ "$version" == "none" ]; then
-            echo "Instalando version 16.0.0...................................................."
+            echo "Instalando version 16.0.0...................................................~"
             nvm install 16.0.0
             validation_node
         else
-            echo "Seteando versión compatible por defecto............................"
+            echo "Seteando versión compatible por defecto................................../"
             nvm use "$version"
             nvm alias default "$version"
             validation_node
         fi
     else
-        echo "nvm no instalada"
+        echo "No cuenta con nvm instalado.................................................~"
         validation_wget
     fi
 }
