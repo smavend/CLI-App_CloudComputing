@@ -57,6 +57,7 @@ validation_nvm() {
             nvm use "$version"
             nvm alias default "$version"
             validate_node
+        fi
     fi
 }
 
