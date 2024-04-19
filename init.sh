@@ -11,7 +11,7 @@ apt upgrade -y
 validation_node() {
     if command -v node &> /dev/null; then
         node_version=$(node -v | awk -F'.' '{print $1}' | sed 's/^.//')
-        if $((node_version))=>16; then
+        if [ "$node_version" -ge 16]; then
             echo "Requerimiento de node cumplido............................................../"
             npm i
         else
