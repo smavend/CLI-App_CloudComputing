@@ -19,7 +19,7 @@ const credentials = [
         username: 'branko',
         email: 'amanrique068@gmail.com',
         password: 'branko',
-        role: 'manager'
+        role: 'admin'
     }
 ]
 
@@ -82,13 +82,18 @@ function retry_login(){
 // options for admin menu
 const options_admin = [
     {
-        type: 'list',
+        type: 'rawlist',
         name: 'options_admin',
         choices: [
-            {name: 'Listar slices', value: 1},
-            {name: 'Intentar nuevamente', value: 1},
-            {name: 'Cambiar contraseña', value: 2},
-            {name: 'Cerrar sesión', value: 0}
+            {name: 'Listar slices', value: 'list_slice'},
+            {name: 'Crear nuevo slice', value: 'new_slice'},            
+            {name: 'Crear nuevo usuario', value: 'new_user'},
+            {name: 'Editar permisos de usuario', value: 'edit_rules'},
+            {name: 'Imprimir logs de troubleshooting', value: 'trbshoot'},
+            {name: 'Listar consumo de recursos del sistema', value: 'list_consumption'},
+            {name: 'Cambiar contraseña', value: 'update_pswd'},
+            {name: 'Cerrar sesión', value: 'logout'},
+            {name: 'Ayuda', value: 'help'}
         ]
     }
 ]
@@ -96,19 +101,60 @@ const options_admin = [
 // actions if admin user
 function menu_admin(user){
     inquirer
-    .prompt(options_admin)
+    .prompt(options_admin).then(answers =>{
+        console.log(answers);
+        switch(answers.options_admin){
+            case "list_slice":
+                break;
+            case "new_slice":
+                break;
+            case "new_user":
+                break;
+            case "edit_rules":
+                break;
+            case "trbshoot":
+                break;
+            case "list_consumption":
+                break;
+            case "update_pswd":
+                break;
+            case "logout":
+                break;
+            case "help":
+                break;
+        }
+    })
 }
 
 // options for client menu
 const options_client = [
     {
-        
+        type: 'rawlist',
+        name: 'options_client',
+        choices: [
+            {name: 'Listar slices', value: 'list_slice'},
+            {name: 'Cambiar contraseña', value: 'update_pswd'},
+            {name: 'Cerrar sesión', value: 'logout'},
+            {name: 'Ayuda', value: 'help'}
+        ]
     }
 ]
 
 // actions if client user
 function menu_client(user){
-    // menu para user
+    inquirer
+    .prompt(options_client).then(answers => {
+        switch(answers.options_client){
+            case "list_slice":
+                break;
+            case "update_pswd":
+                break;
+            case "logout":
+                break;
+            case "help":
+                break;
+        }
+    })
 }
 
 // options for manager menu
