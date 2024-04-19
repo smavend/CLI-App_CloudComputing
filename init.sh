@@ -15,6 +15,7 @@ validation_node() {
             echo "Requerimiento de node cumplido............................................../"
             npm i
         else
+            echo "Validacion de nvm"
             validation_nvm
         fi
     else
