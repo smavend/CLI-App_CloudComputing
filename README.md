@@ -7,3 +7,9 @@ Deberá ejecutar el srcipt ```init.sh```, el cual validará que se cumplan con l
 
 Para ello debe correr el siguiente comando en el directorio en el que clonó el repositorio:
 ```bash
+bash init.sh
+```
+Finalmente, cuando se obtenga un _setup_ exitoso, se debe ejecutar el siguiente comando para abrir la CLI app:
+```bash
+node index.js
+```
