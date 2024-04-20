@@ -14,7 +14,7 @@ validation_node() {
         if [ "$node_version" -ge 16 ]; then
             echo "Requerimiento de node cumplido............................................../"
             npm i
-            echo "\n\nPrograma listo///////////////////////////////////////////////////////////////"
+            echo "Programa listo///////////////////////////////////////////////////////////////"
         else
             validation_nvm
         fi
