@@ -150,25 +150,26 @@ const options_admin = [
 // actions if manager user
 async function menu_manager(user){
     // menu para manager
-    const answers = await inquirer.prompt(options_manager)
-    switch(answers.options_admin){
-        case "show_slice":
-            break;
-        case "new_slice":
-            break;
-        case "manage-slices":
-            break;
-        case "monitoring":
-            break;
-        case "config":
-            break;
-        case "update_pswd":
-            break;
-        case "logout":
-            break;
-        case "help":
-            break;
-    }
+    let answers;
+    do {
+      answers = await inquirer.prompt(options_manager);
+      switch(answers.options_admin){
+          case "show_slice":
+              break;
+          case "new_slice":
+              break;
+          case "manage-slices":
+              break;
+          case "monitoring":
+              break;
+          case "config":
+              break;
+          case "update_pswd":
+              break;
+          case "help":
+              break;
+      }
+    } while(answers.options_admin !== 'logout')
 }
 
 // validation of credentials
@@ -189,13 +190,13 @@ async function validate(){
             // redirecting according role
             switch (valid_usr.role){
                 case 'client':
-                    menu_client(valid_usr);
+                    await menu_client(valid_usr);
                     break;
                 case 'manager':
-                    menu_manager(valid_usr);
+                    await menu_manager(valid_usr);
                     break;
                 case 'admin':
-                    menu_admin(valid_usr);
+                    await menu_admin(valid_usr);
                     break;
             }
         }
