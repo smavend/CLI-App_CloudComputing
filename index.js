@@ -63,35 +63,6 @@ const login = [
     }
 ]
 
-// list after invalid credentials
-const login2 = {
-    type: 'list',
-    name: 'option',
-    message: 'Escoja una opción para continuar',
-    choices: [
-        {name: 'Intentar nuevamente', value: 1},
-        {name: 'Olvidé mi contraseña', value: 2},
-        {name: 'Salir', value: 0}
-    ],
-}
-
-// call menu after invalid credentials
-function retry_login(){
-    inquirer.prompt(login2).then(answers => {
-        switch(answers.option){
-            case 1:
-                validate();
-                break;
-            case 2:
-                // funcion para cambiar de contraseña con correo asociado
-                break;
-            case 0:
-                console.log("...Cerrando programa")
-                break;
-        }
-    })
-}
-
 // options for admin menu
 const options_manager = [
     {
@@ -121,6 +92,7 @@ const options_client = [
     {
         type: 'rawlist',
         name: 'options_client',
+        message: 'Seleccione una opción: ',
         choices: [
             {name: 'Listar slices', value: 'list_slice'},
             {name: 'Cambiar contraseña', value: 'update_pswd'},
@@ -228,13 +200,11 @@ async function validate(){
         // invalid user
         else{
             spinner.error({text: 'Credenciales incorrectas'});
-            //retry_login();
         }
     }
     // invalid user
     else{
         spinner.error({text: 'Credenciales incorrectas'});
-        //retry_login();
     }
 }
 
