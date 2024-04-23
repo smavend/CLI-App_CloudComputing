@@ -19,7 +19,7 @@ const credentials = [
         username: 'branko',
         email: 'amanrique068@gmail.com',
         password: 'branko',
-        role: 'admin'
+        role: 'manager'
     }
 ]
 
@@ -100,29 +100,7 @@ export const options_admin = [
 
 // actions if admin user
 function menu_admin(user){
-    inquirer
-    .prompt(options_admin).then(answers => {
-        switch(answers.options_admin){
-            case "list_slice":
-                break;
-            case "new_slice":
-                break;
-            case "new_user":
-                break;
-            case "edit_rules":
-                break;
-            case "trbshoot":
-                break;
-            case "list_consumption":
-                break;
-            case "update_pswd":
-                break;
-            case "logout":
-                break;
-            case "help":
-                break;
-        }
-    })
+   // admin menu 
 }
 
 // options for client menu
@@ -166,6 +144,29 @@ const options_manager = [
 // actions if manager user
 function menu_manager(user){
     // menu para manager
+    inquirer
+    .prompt(options_admin).then(answers => {
+        switch(answers.options_admin){
+            case "list_slice":
+                break;
+            case "new_slice":
+                break;
+            case "new_user":
+                break;
+            case "edit_rules":
+                break;
+            case "trbshoot":
+                break;
+            case "list_consumption":
+                break;
+            case "update_pswd":
+                break;
+            case "logout":
+                break;
+            case "help":
+                break;
+        }
+    })
 }
 
 // validation of credentials
