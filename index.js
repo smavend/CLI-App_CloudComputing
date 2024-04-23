@@ -180,23 +180,22 @@ async function validate(){
         if(valid_usr.password === answers.password){
             // valid user
             spinner.success({text: 'Credenciales correctas'});
-            figlet(valid_usr.role,(err1, data1) => {
-                console.log(data1);
-                console.log('Seleccione una opción para continuar:');
 
-                // redirecting according role
-                switch (valid_usr.role){
-                    case 'client':
-                        menu_client(valid_usr);
-                        break;
-                    case 'manager':
-                        menu_manager(valid_usr);
-                        break;
-                    case 'admin':
-                        menu_admin(valid_usr);
-                        break;
-                }
-            })
+            console.log(figlet.textSync(valid_usr.role));
+            console.log('Seleccione una opción para continuar:');
+
+            // redirecting according role
+            switch (valid_usr.role){
+                case 'client':
+                    menu_client(valid_usr);
+                    break;
+                case 'manager':
+                    menu_manager(valid_usr);
+                    break;
+                case 'admin':
+                    menu_admin(valid_usr);
+                    break;
+            }
         }
         // invalid user
         else{
