@@ -23,6 +23,20 @@ const credentials = [
     }
 ]
 
+// 
+const start = [
+    {
+        type: 'list',
+        name: 'option',
+        message: 'Escoja una opción para continuar',
+        choices: [
+            {name: 'Iniciar sesión', value: 1},
+            {name: 'Olvidé mi contraseña', value: 2},
+            {name: 'Salir', value: 0}
+        ],
+    }
+]
+
 // login inputs
 const login = [
     {
@@ -118,20 +132,23 @@ const options_client = [
 ]
 
 // actions if client user
-function menu_client(user){
-    inquirer
-    .prompt(options_client).then(answers => {
+async function menu_client(user){
+    let answers;
+    do {
+        answers = await inquirer.prompt(options_client);
         switch(answers.options_client){
             case "list_slice":
                 break;
             case "update_pswd":
                 break;
             case "logout":
+                console.clear();
+                launch();
                 break;
             case "help":
                 break;
         }
-    })
+    } while(answers.options_client !== 'logout')
 }
 
 // options for manager menu
@@ -152,23 +169,26 @@ async function menu_manager(user){
     // menu para manager
     let answers;
     do {
-      answers = await inquirer.prompt(options_manager);
-      switch(answers.options_admin){
-          case "show_slice":
-              break;
-          case "new_slice":
-              break;
-          case "manage-slices":
-              break;
-          case "monitoring":
-              break;
-          case "config":
-              break;
-          case "update_pswd":
-              break;
-          case "help":
-              break;
-      }
+        answers = await inquirer.prompt(options_manager);
+        switch(answers.options_admin){
+            case "show_slice":
+                break;
+            case "new_slice":
+                break;
+            case "manage-slices":
+                break;
+            case "monitoring":
+                break;
+            case "config":
+                break;
+            case "update_pswd":
+                break;
+            case "help":
+                break;
+            case "logout":
+                console.clear();
+                launch();
+        }
     } while(answers.options_admin !== 'logout')
 }
 
@@ -216,8 +236,21 @@ async function validate(){
 // main app
 function launch() {
     console.log(figlet.textSync("Orchestator"));
-    console.log("¡Bienvenido a la app CLI del orquestador Cloud!");        
-    validate();
+    console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
+    inquirer.prompt(start).then(answers => {
+        switch(answers.option){
+            case 1:
+                validate();
+                break;
+            case 2:
+                // funcion para cambiar de contraseña con correo asociado
+                break;
+            case 0:
+                console.log("...Cerrando programa");
+                process.exit(1);
+                break;
+        }
+    })
 }
 
 launch();
