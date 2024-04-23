@@ -87,7 +87,6 @@ function retry_login(){
                 break;
             case 0:
                 console.log("...Cerrando programa")
-                process.exit(1)
                 break;
         }
     })
@@ -140,10 +139,11 @@ async function menu_client(user){
             case "list_slice":
                 break;
             case "update_pswd":
+                await update_pswd();
                 break;
             case "logout":
                 console.clear();
-                launch();
+                await launch();
                 break;
             case "help":
                 break;
@@ -182,14 +182,19 @@ async function menu_manager(user){
             case "config":
                 break;
             case "update_pswd":
+                await update_pswd();
                 break;
             case "help":
                 break;
             case "logout":
                 console.clear();
-                launch();
+                await launch();
+                break;
         }
     } while(answers.options_admin !== 'logout')
+}
+
+async function update_pswd(){
 }
 
 // validation of credentials
@@ -223,34 +228,37 @@ async function validate(){
         // invalid user
         else{
             spinner.error({text: 'Credenciales incorrectas'});
-            retry_login();
+            //retry_login();
         }
     }
     // invalid user
     else{
         spinner.error({text: 'Credenciales incorrectas'});
-        retry_login();
+        //retry_login();
     }
 }
 
 // main app
-function launch() {
+async function launch() {
     console.log(figlet.textSync("Orchestator"));
     console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
-    inquirer.prompt(start).then(answers => {
+    let answers;
+    do {
+        answers = await inquirer.prompt(start);
         switch(answers.option){
             case 1:
-                validate();
+                await validate();
                 break;
             case 2:
                 // funcion para cambiar de contraseña con correo asociado
+                await update_pswd();
                 break;
             case 0:
                 console.log("...Cerrando programa");
                 process.exit(1);
                 break;
         }
-    })
+    } while (answers.option!==0)
 }
 
 launch();
