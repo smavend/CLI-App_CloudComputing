@@ -210,7 +210,7 @@ async function validate(){
 
 // main app
 async function launch() {
-    console.log(figlet.textSync("Orchestator"));
+    console.log(figlet.textSync("Orchestrator"));
     console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
     let answers;
     do {
