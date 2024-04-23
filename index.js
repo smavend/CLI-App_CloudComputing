@@ -170,7 +170,7 @@ function menu_manager(user){
 
 // validation of credentials
 function validate(){
-    console.log("Ingrese sus credenciales\n\n");
+    console.log("Ingrese sus credenciales\n");
     inquirer.prompt(login).then(async answers => {
         const valid_usr = credentials.find(usr => usr.username === answers.username);
         const spinner = createSpinner('Validando credenciales...').start();
@@ -217,11 +217,9 @@ function validate(){
 
 // main app
 function launch() {
-    figlet("Orquestator", (err, data) => {
-        console.log(data);
-        console.log("¡Bienvenido a la app CLI del orquestador Cloud!");        
-        validate();
-    });
+    console.log(figlet.textSync("Orchestator"));
+    console.log("¡Bienvenido a la app CLI del orquestador Cloud!");        
+    validate();
 }
 
 launch();
