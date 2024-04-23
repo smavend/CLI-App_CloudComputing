@@ -19,7 +19,7 @@ const credentials = [
         username: 'branko',
         email: 'amanrique068@gmail.com',
         password: 'branko',
-        role: 'admin'
+        role: 'manager'
     }
 ]
 
@@ -80,17 +80,17 @@ function retry_login(){
 }
 
 // options for admin menu
-export const options_admin = [
+const options_manager = [
     {
         type: 'rawlist',
         name: 'options_admin',
+        message: 'Seleccione una opción:',
         choices: [
-            {name: 'Listar slices', value: 'list_slice'},
-            {name: 'Crear nuevo slice', value: 'new_slice'},            
-            {name: 'Crear nuevo usuario', value: 'new_user'},
-            {name: 'Editar permisos de usuario', value: 'edit_rules'},
-            {name: 'Imprimir logs de troubleshooting', value: 'trbshoot'},
-            {name: 'Listar consumo de recursos del sistema', value: 'list_consumption'},
+            {name: 'Ver detalle slice', value: 'show_slice'},
+            {name: 'Crear slice', value: 'new_slice'},            
+            {name: 'Gestionar slices', value: 'manage_slices'},
+            {name: 'Monitoreo', value: 'monitoring'},
+            {name: 'Configuración', value: 'config'},
             {name: 'Cambiar contraseña', value: 'update_pswd'},
             {name: 'Cerrar sesión', value: 'logout'},
             {name: 'Ayuda', value: 'help'}
@@ -100,29 +100,7 @@ export const options_admin = [
 
 // actions if admin user
 function menu_admin(user){
-    inquirer
-    .prompt(options_admin).then(answers => {
-        switch(answers.options_admin){
-            case "list_slice":
-                break;
-            case "new_slice":
-                break;
-            case "new_user":
-                break;
-            case "edit_rules":
-                break;
-            case "trbshoot":
-                break;
-            case "list_consumption":
-                break;
-            case "update_pswd":
-                break;
-            case "logout":
-                break;
-            case "help":
-                break;
-        }
-    })
+   // admin menu 
 }
 
 // options for client menu
@@ -157,15 +135,40 @@ function menu_client(user){
 }
 
 // options for manager menu
-const options_manager = [
+const options_admin = [
     {
-
+        type: 'rawlist',
+        name: 'options_admin',
+        message: 'Seleccione una opción:',
+        choices: [
+            {name: 'Crear nuevo usuario', value: 'new_user'},
+            {name: 'Editar permisos de usuario', value: 'edit_rules'},
+        ]
     }
 ]
 
 // actions if manager user
-function menu_manager(user){
+async function menu_manager(user){
     // menu para manager
+    const answers = await inquirer.prompt(options_manager)
+    switch(answers.options_admin){
+        case "show_slice":
+            break;
+        case "new_slice":
+            break;
+        case "manage-slices":
+            break;
+        case "monitoring":
+            break;
+        case "config":
+            break;
+        case "update_pswd":
+            break;
+        case "logout":
+            break;
+        case "help":
+            break;
+    }
 }
 
 // validation of credentials
@@ -181,9 +184,8 @@ async function validate(){
             // valid user
             spinner.success({text: 'Credenciales correctas'});
 
+            console.clear();
             console.log(figlet.textSync(valid_usr.role));
-            console.log('Seleccione una opción para continuar:');
-
             // redirecting according role
             switch (valid_usr.role){
                 case 'client':
