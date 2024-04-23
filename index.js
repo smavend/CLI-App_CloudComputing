@@ -169,50 +169,46 @@ function menu_manager(user){
 }
 
 // validation of credentials
-function validate(){
+async function validate(){
     console.log("Ingrese sus credenciales\n");
-    inquirer.prompt(login).then(async answers => {
-        const valid_usr = credentials.find(usr => usr.username === answers.username);
-        const spinner = createSpinner('Validando credenciales...').start();
+    const answers = await inquirer.prompt(login);
+    const valid_usr = credentials.find(usr => usr.username === answers.username);
+    const spinner = createSpinner('Validando credenciales...').start();
+    await sleep();
+    
+    if(valid_usr){
+        if(valid_usr.password === answers.password){
+            // valid user
+            spinner.success({text: 'Credenciales correctas'});
+            figlet(valid_usr.role,(err1, data1) => {
+                console.log(data1);
+                console.log('Seleccione una opción para continuar:');
 
-        await sleep();
-        if(valid_usr){
-            if(valid_usr.password === answers.password){
-
-                // valid user
-                spinner.success({text: 'Credenciales correctas'});
-                figlet(valid_usr.role,(err1, data1) => {
-                    console.log(data1);
-                    console.log('Seleccione una opción para continuar:');
-
-                    // redirecting according role
-                    switch (valid_usr.role){
-                        case 'client':
-                            menu_client(valid_usr);
-                            break;
-                        case 'manager':
-                            menu_manager(valid_usr);
-                            break;
-                        case 'admin':
-                            menu_admin(valid_usr);
-                            break;
-                    }
-                })
-            }
-
-            // invalid user
-            else{
-                spinner.error({text: 'Credenciales incorrectas'});
-                retry_login();
-            }
+                // redirecting according role
+                switch (valid_usr.role){
+                    case 'client':
+                        menu_client(valid_usr);
+                        break;
+                    case 'manager':
+                        menu_manager(valid_usr);
+                        break;
+                    case 'admin':
+                        menu_admin(valid_usr);
+                        break;
+                }
+            })
         }
-
         // invalid user
         else{
             spinner.error({text: 'Credenciales incorrectas'});
             retry_login();
         }
-    })
+    }
+    // invalid user
+    else{
+        spinner.error({text: 'Credenciales incorrectas'});
+        retry_login();
+    }
 }
 
 // main app
