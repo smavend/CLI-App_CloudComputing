@@ -109,6 +109,7 @@ async function menu_manager(user){
         answers = await inquirer.prompt(options_manager);
         switch(answers.options_admin){
             case 1: // show slice details
+                await show_slice_details();
                 break;
             case 2: // create slice
                 break;
@@ -134,6 +135,11 @@ async function menu_manager(user){
 async function show_slices_brief(){
     // fetch slices data from orchestrator server
     console.log('-----\nslices\n-----');
+}
+
+async function show_slice_details(){
+    const answer = await inquirer.prompt(show_slice_prompt);
+    console.log(answer);
 }
 
 // ---------- CLIENT FLOW ---------- //
@@ -201,7 +207,9 @@ const login = [
     }
 ]
 
-// options for admin menu
+// --- admin prompts ---
+
+// options for manager menu
 const options_manager = [
     {
         type: 'rawlist',
@@ -220,6 +228,15 @@ const options_manager = [
     }
 ]
 
+const show_slice_prompt = [
+    {
+        type: 'input',
+        name: 'slice',
+        message: 'Ingrese un slice'
+    }
+]
+// --- client prompts ---
+
 // options for client menu
 const options_client = [
     {
@@ -235,7 +252,9 @@ const options_client = [
     }
 ]
 
-// options for manager menu
+// --- manager prompts ---
+
+// options for admin menu
 const options_admin = [
     {
         type: 'rawlist',
@@ -247,5 +266,7 @@ const options_admin = [
         ]
     }
 ]
+
+// 
 
 launch();
