@@ -20,6 +20,12 @@ const credentials = [
         email: 'amanrique068@gmail.com',
         password: 'branko',
         role: 'manager'
+    },
+    {
+        username: 'willy',
+        email: 'willy@gmail.com',
+        password: 'willy',
+        role: 'admin'
     }
 ]
 
@@ -104,12 +110,13 @@ async function menu_admin(user){
 async function menu_manager(user){
     // menu para manager
     let answers;
-    show_slices_brief();
+
     do {
+        show_home_manager(user.username);
         answers = await inquirer.prompt(options_manager);
         switch(answers.options_admin){
-            case 1: // show slice details
-                await show_slice_details();
+            case 1: // show list of slices
+                await show_slices_list(user);
                 break;
             case 2: // create slice
                 break;
@@ -132,14 +139,31 @@ async function menu_manager(user){
     } while(answers.options_admin !== 0)
 }
 
-async function show_slices_brief(){
+async function show_home_manager(username){
     // fetch slices data from orchestrator server
-    console.log('-----\nslices\n-----');
+    console.log('-----\nHome > ' + username + '\n-----');
 }
 
 async function show_slice_details(){
     const answer = await inquirer.prompt(show_slice_prompt);
     console.log(answer);
+}
+
+async function show_slices_list(user){
+    console.log('-----\nHome > ' + user.username + ' > Lista de slices' + '\n-----');
+    const answers = await inquirer.prompt(show_slices);
+    switch(answers.show_slices){
+        case 1:
+            console.log("Bienvenido al slice 1")
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            menu_manager(user)
+            break;
+    }
 }
 
 // ---------- CLIENT FLOW ---------- //
@@ -216,11 +240,11 @@ const options_manager = [
         name: 'options_admin',
         message: 'Seleccione una opción:',
         choices: [
-            {name: 'Ver detalle slice', value: 1},
-            {name: 'Crear slice', value: 2},            
+            {name: 'Lista de slices', value: 1},
+            {name: 'Crear slices', value: 2},            
             {name: 'Gestionar slices', value: 3},
             {name: 'Monitoreo', value: 4},
-            {name: 'Configuración', value: 5},
+            {name: 'Configuración de templates', value: 5},
             {name: 'Cambiar contraseña', value: 6},
             {name: 'Ayuda', value: 7},
             {name: 'Cerrar sesión', value: 0}
@@ -228,11 +252,25 @@ const options_manager = [
     }
 ]
 
-const show_slice_prompt = [
+const show_slices = [
+    {
+        type: 'rawlist',
+        name: 'list_slices',
+        message: 'Seleccione el slice:',
+        choices: [
+            {name: 'slice 1', value: 1},
+            {name: 'slice 2', value: 2},
+            {name: 'slice 3', value: 3},
+            {name: 'regresar', value: 4},
+        ]
+    }
+]
+
+const show_slice_list = [
     {
         type: 'input',
-        name: 'slice',
-        message: 'Ingrese un slice'
+        name: 'slices list',
+        message: 'Lista de slices activos'
     }
 ]
 // --- client prompts ---
