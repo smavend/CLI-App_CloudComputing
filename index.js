@@ -194,6 +194,20 @@ async function show_create_manag(user, optionName){
                     choices: ['Star', 'Tree', 'Mesh', 'Anillo']
                 },
                 {
+                    type: 'list',
+                    name: 'securityRules',
+                    message: 'Seleccione una regla de acceso/salida a internet o cree una nueva:',
+                    choices: [
+                        'Permitir todo el tráfico saliente',
+                        'Bloquear todo el tráfico saliente',
+                        'Permitir todo el tráfico entrante',
+                        'Bloquear todo el tráfico entrante',
+                        'Permitir tráfico HTTP (puerto 80)',
+                        'Permitir tráfico HTTPS (puerto 443)',
+                        'Crear una nueva regla'
+                    ]
+                },
+                {
                     type: 'number',
                     name: 'numVM',
                     message: 'Número de VMs:',
@@ -227,27 +241,13 @@ async function show_create_manag(user, optionName){
                         choices: ['Zona A', 'Zona B', 'Zona C']
                     }
                 ]);
-                vmConfigs.push(vmConfig);
+
             }
 
-            const sliceNetwork = await inquirer.prompt([
-                {
-                    type: 'list',
-                    name: 'securityRules',
-                    message: 'Seleccione una regla de acceso/salida a internet o cree una nueva:',
-                    choices: [
-                        'Permitir todo el tráfico saliente',
-                        'Bloquear todo el tráfico saliente',
-                        'Permitir todo el tráfico entrante',
-                        'Bloquear todo el tráfico entrante',
-                        'Permitir tráfico HTTP (puerto 80)',
-                        'Permitir tráfico HTTPS (puerto 443)',
-                        'Crear una nueva regla'
-                    ]
-                }
-            ]);
+    
             const spinner = createSpinner('Creando Slice ...').start();
-            setTimeout(() => {spinner.stop();}, 12000);
+            setTimeout(() => {spinner.stop();}, 1200);
+            menu_manager(user);
             break;
         case 3:
             break;
