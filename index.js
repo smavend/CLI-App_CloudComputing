@@ -33,7 +33,7 @@ const credentials = [
 
 // main app
 async function launch() {
-    console.log(figlet.textSync("Orquestador"));
+    console.log(figlet.textSync("Orcuestator"));
     console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
     let answers;
     do {
