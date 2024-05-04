@@ -30,7 +30,7 @@ class ManagerFlow{
             type: 'list',
             name: 'topology',
             message: 'Seleccione una topología predefinida:',
-            choices: ['Star', 'Tree', 'Mesh', 'Anillo']
+            choices: ['Star', 'Tree', 'Mesh', 'Ring']
         },
         {
             type: 'list',
@@ -112,7 +112,7 @@ class ManagerFlow{
                 const vmConfigs = [];
                 for (let i = 0; i < sliceConfig.numVM; i++) {
                     console.log(`Configuración de la VM #${i + 1}`);
-                    const vmConfig = await inquirer.prompt(this.#options_config_vm);
+                    await inquirer.prompt(this.#options_config_vm);
                 }
 
                 const spinner = createSpinner('Creando Slice ...').start();
@@ -137,7 +137,7 @@ class ManagerFlow{
 
             switch(answer.options_admin){
                 case 1: // show list of slices
-                    await this.show_slices_list_manag(user,selectedOptionName);
+                    // await this.show_slices_list_manag(user,selectedOptionName);
                     break;
                 case 2: // create slice
                     await this.show_create_manag(user,selectedOptionName);
