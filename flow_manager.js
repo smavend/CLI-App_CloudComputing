@@ -9,7 +9,7 @@ class ManagerFlow{
             message: 'Seleccione una opción:',
             choices: [
                 {name: 'Lista de slices', value: 1},
-                {name: 'Crear slice', value: 2},            
+                {name: 'Crear slice', value: 2},
                 {name: 'Gestionar slices', value: 3},
                 {name: 'Monitoreo', value: 4},
                 {name: 'Configuración de templates', value: 5},
@@ -101,7 +101,7 @@ class ManagerFlow{
 
     async show_create_manag(user, optionName){
         this.show_home_level1(user.username, optionName);
-        const answers = await inquirer.prompt(show_create_options_mng);
+        const answers = await inquirer.prompt(this.#options_create_slice);
         switch(answers.create_options){
             case 1:
                 console.log('Utilizando template...');
