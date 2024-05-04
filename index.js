@@ -37,7 +37,7 @@ const credentials = [
 async function launch() {
     let answers;
     do {
-        console.log(figlet.textSync("Orquestator"));
+        console.log(figlet.textSync("Orchestator"));
         console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
         answers = await inquirer.prompt(start);
         switch(answers.option){

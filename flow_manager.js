@@ -78,44 +78,14 @@ class ManagerFlow{
         }
     ]
 
-    async start(user){
-        let answer;
-        do {
-            show_home_manager(user.username);
-            answer = await inquirer.prompt(this.#options_manager);
-            let selectedOptionName = options_manager[0].choices.find(choice => choice.value === answer.options_admin).name;
-
-            switch(answer.options_admin){
-                case 1: // show list of slices
-                    await show_slices_list_manag(user,selectedOptionName);
-                    break;
-                case 2: // create slice
-                    await show_create_manag(user,selectedOptionName);
-                    break;
-                case 3: // manage slices
-                    break;
-                case 4: // monitoring resources
-                    break;
-                case 5: // configuration
-                    break;
-                case 6: // update password
-                    break;
-                case 7: // help
-                    break;
-                case 0: // logout
-                    break;
-            }
-        } while(answer.options_admin !== 0)
-    }
-
-    show_home_manager(username){
+    async show_home_manager(username){
         // fetch slices data from orchestrator server
         console.log('-----\n' + username + ' > Home \n-----');
     }
 
     async show_slices_list_manag(user, optionName){
         // 
-        show_home_level1(user.username,optionName)
+        this.show_home_level1(user.username,optionName)
         const answers = await inquirer.prompt(show_slices);
         switch(answers.show_slices){
             case 1:
@@ -130,7 +100,7 @@ class ManagerFlow{
     }
 
     async show_create_manag(user, optionName){
-        show_home_level1(user.username, optionName);
+        this.show_home_level1(user.username, optionName);
         const answers = await inquirer.prompt(show_create_options_mng);
         switch(answers.create_options){
             case 1:
@@ -156,6 +126,36 @@ class ManagerFlow{
 
     async show_home_level1(username, optionName){
       console.log('-----\n' + username + ' > Home > '+ optionName + '\n-----');
+    }
+
+    async start(user){
+        let answer;
+        do {
+            await this.show_home_manager(user.username);
+            answer = await inquirer.prompt(this.#options_manager);
+            let selectedOptionName = this.#options_manager[0].choices.find(choice => choice.value === answer.options_admin).name;
+
+            switch(answer.options_admin){
+                case 1: // show list of slices
+                    await this.show_slices_list_manag(user,selectedOptionName);
+                    break;
+                case 2: // create slice
+                    await this.show_create_manag(user,selectedOptionName);
+                    break;
+                case 3: // manage slices
+                    break;
+                case 4: // monitoring resources
+                    break;
+                case 5: // configuration
+                    break;
+                case 6: // update password
+                    break;
+                case 7: // help
+                    break;
+                case 0: // logout
+                    break;
+            }
+        } while(answer.options_admin !== 0)
     }
 }
 
