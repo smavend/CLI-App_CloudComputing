@@ -36,8 +36,9 @@ const credentials = [
 // main app
 async function launch() {
     let answers;
+    
     do {
-        console.log(figlet.textSync("Orchestator"));
+        console.log(figlet.textSync("Orquestador"));
         console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
         answers = await inquirer.prompt(start);
         switch(answers.option){
@@ -97,6 +98,20 @@ async function update_pswd(){
 }
 
 // ---------- INQUIRER PROMPTS ---------- //
+
+// infrastructure prompt
+const infrastructure = [
+  {
+    type: 'list',
+    name: 'infrastructure',
+    message: 'Seleccione una infraestructura',
+    choices: [
+      {name: 'Linux', value: 1},
+      {name: 'OpenStack', value: 2},
+      {name: 'Salir', value: 3}
+    ]
+  }
+]
 
 // start app prompt
 const start = [

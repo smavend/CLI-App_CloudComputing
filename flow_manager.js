@@ -78,6 +78,18 @@ class ManagerFlow{
         }
     ]
 
+    #infrastructure = [
+      {
+        type: 'list',
+        name: 'infrastructure',
+        message: 'Seleccione una infraestructura',
+        choices: [
+          {name: 'Linux', value: 1},
+          {name: 'OpenStack', value: 2},
+        ]
+      }
+    ]
+
     async show_home_manager(username){
         // fetch slices data from orchestrator server
         console.log('-----\n' + username + ' > Home \n-----');
@@ -128,7 +140,7 @@ class ManagerFlow{
       console.log('-----\n' + username + ' > Home > '+ optionName + '\n-----');
     }
 
-    async start(user){
+    async linuxInfrastructure(user){
         let answer;
         do {
             await this.show_home_manager(user.username);
@@ -156,6 +168,16 @@ class ManagerFlow{
                     break;
             }
         } while(answer.options_admin !== 0)
+    }
+
+    async start(user){
+
+        const answer = await inquirer.prompt(this.#infrastructure);
+        if (answer.infrastructure === 1){ // Linux
+          await this.linuxInfrastructure(user);
+        } else { // OpenStack
+          openstackInfrastructure();
+        }
     }
 }
 
