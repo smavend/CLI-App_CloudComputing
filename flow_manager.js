@@ -33,10 +33,11 @@ class ManagerFlow{
             choices: [
                 {name: 'Lista de slices', value: 1},
                 {name: 'Crear slice', value: 2},
-                {name: 'Gestionar slices', value: 3},
-                {name: 'Monitoreo', value: 4},
-                {name: 'Cambiar contraseña', value: 5},
-                {name: 'Ayuda', value: 6},
+                {name: 'Editar slices', value: 3},
+                {name: 'Borrar slices', value: 4},
+                {name: 'Monitoreo', value: 5},
+                {name: 'Cambiar contraseña', value: 6},
+                {name: 'Ayuda', value: 7},
                 {name: 'Cerrar sesión', value: 0}
             ]
         }
@@ -178,6 +179,8 @@ class ManagerFlow{
                     break;
                 case 6: // help
                     break;
+                case 7:
+                      break;
                 case 0: // logout
                     break;
             }
