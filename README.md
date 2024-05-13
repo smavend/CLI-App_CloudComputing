@@ -1,9 +1,3 @@
----
-runme:
-  id: 01HWB4H0QJW56YEFS5WGF4Z1S1
-  version: v3
----
-
 # Instalación
 
 La CLI App para Cloud computing se podrá emplear haciendo uso de los archivos que incluye este repositorio. Para estos pasos, se deberá clonar la información como usuario **root**.
