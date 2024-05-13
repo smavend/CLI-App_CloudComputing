@@ -12,9 +12,8 @@ class ManagerFlow{
                 {name: 'Crear slice', value: 2},
                 {name: 'Gestionar slices', value: 3},
                 {name: 'Monitoreo', value: 4},
-                {name: 'Configuración de templates', value: 5},
-                {name: 'Cambiar contraseña', value: 6},
-                {name: 'Ayuda', value: 7},
+                {name: 'Cambiar contraseña', value: 5},
+                {name: 'Ayuda', value: 6},
                 {name: 'Cerrar sesión', value: 0}
             ]
         }
@@ -78,18 +77,6 @@ class ManagerFlow{
         }
     ]
 
-    #infrastructure = [
-      {
-        type: 'list',
-        name: 'infrastructure',
-        message: 'Seleccione una infraestructura',
-        choices: [
-          {name: 'Linux', value: 1},
-          {name: 'OpenStack', value: 2},
-        ]
-      }
-    ]
-
     async show_home_manager(username){
         // fetch slices data from orchestrator server
         console.log('-----\n' + username + ' > Home \n-----');
@@ -140,7 +127,7 @@ class ManagerFlow{
       console.log('-----\n' + username + ' > Home > '+ optionName + '\n-----');
     }
 
-    async linuxInfrastructure(user){
+    async start(user){
         let answer;
         do {
             await this.show_home_manager(user.username);
@@ -158,26 +145,14 @@ class ManagerFlow{
                     break;
                 case 4: // monitoring resources
                     break;
-                case 5: // configuration
+                case 5: // update password
                     break;
-                case 6: // update password
-                    break;
-                case 7: // help
+                case 6: // help
                     break;
                 case 0: // logout
                     break;
             }
         } while(answer.options_admin !== 0)
-    }
-
-    async start(user){
-
-        const answer = await inquirer.prompt(this.#infrastructure);
-        if (answer.infrastructure === 1){ // Linux
-          await this.linuxInfrastructure(user);
-        } else { // OpenStack
-          openstackInfrastructure();
-        }
     }
 }
 

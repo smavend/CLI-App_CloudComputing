@@ -38,7 +38,7 @@ async function launch() {
     let answers;
     
     do {
-        console.log(figlet.textSync("Orquestador"));
+        console.log(figlet.textSync("Slice Manager"));
         console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
         answers = await inquirer.prompt(start);
         switch(answers.option){
