@@ -2,46 +2,27 @@ import inquirer from "inquirer";
 import figlet from 'figlet';
 
 class ManagerFlow{
-
-    #SLICES = [
-      {
-        id: 1,
-        nombre: "Slice1",
-        usuario_id: "1",
-        topologia: "lineal",
-        estado: "Activo",
-        numerodevms: "3",
-        fechadecreacion: "2024-05-12T12:30:13",
-        zonadisponibilidad: "Zona 2",
-      },
-      {
-        id: 2,
-        nombre: "Slice2",
-        usuario_id: "1",
-        topologia: "malla",
-        estado: "Desactivo",
-        numerodevms: "4",
-        fechadecreacion: "2024-05-12T23:40:13",
-        zonadisponibilidad: "Zona 1",
-      },
-    ]
+    
+    constructor(TOKEN){
+      this.TOKEN = TOKEN;
+    }
 
     #options_manager = [
-        {
-            type: 'rawlist',
-            name: 'options_admin',
-            message: 'Seleccione una opción:',
-            choices: [
-                {name: 'Lista de slices', value: 1},
-                {name: 'Crear slice', value: 2},
-                {name: 'Editar slices', value: 3},
-                {name: 'Borrar slices', value: 4},
-                {name: 'Monitoreo', value: 5},
-                {name: 'Cambiar contraseña', value: 6},
-                {name: 'Ayuda', value: 7},
-                {name: 'Cerrar sesión', value: 0}
-            ]
-        }
+      {
+        type: 'rawlist',
+        name: 'options_admin',
+        message: 'Seleccione una opción:',
+        choices: [
+          {name: 'Lista de slices', value: 1},
+          {name: 'Crear slice', value: 2},
+          {name: 'Editar slices', value: 3},
+          {name: 'Borrar slices', value: 4},
+          {name: 'Monitoreo de recursos', value: 5},
+          {name: 'Cambiar contraseña', value: 6},
+          {name: 'Ayuda', value: 7},
+          {name: 'Cerrar sesión', value: 0}
+        ]
+      }
     ]
 
     #options_create_slice = [
@@ -114,6 +95,38 @@ class ManagerFlow{
       }
     ]
 
+    async start(){
+      console.log(figlet.textSync('Manager'));
+        let answer;
+        do {
+            // await this.show_home_manager(user.username);
+            answer = await inquirer.prompt(this.#options_manager);
+            let selectedOptionName = this.#options_manager[0].choices.find(choice => choice.value === answer.options_admin).name;
+
+            switch(answer.options_admin){
+                case 1: // show list of slices
+                    await this.show_slices();
+                    break;
+                case 2: // create slice
+                    await this.show_create_manag(selectedOptionName);
+                    break;
+                case 3: // edit slices
+                    break;
+                case 4: // delete slices
+                    break;
+                case 5: // monitoring resources
+                    break;
+                case 6: // update password
+                    break;
+                case 7: // help
+                      break;
+                case 0: // logout
+                  console.clear();
+                    break;
+            }
+        } while(answer.options_admin !== 0)
+    }
+
     async show_home_manager(username){
         // fetch slices data from orchestrator server
         console.log('-----\n' + username + ' > Home \n-----');
@@ -149,8 +162,10 @@ class ManagerFlow{
     }
 
     async show_slices(){
-      console.log(`Se encontraron ${this.#SLICES.length} slices`);
-      console.table(this.#SLICES);
+      const response = await this.fetchSlices(this.TOKEN);
+      const slices = response.slices;
+      console.log(`Se encontraron ${slices.length} slices`);
+      console.table(slices);
       let answer;
       do {
         answer = await inquirer.prompt(this.#show_slices_options);
@@ -158,35 +173,16 @@ class ManagerFlow{
       } while (answer.res != 2)
     }
 
-    async start(){
-      console.log(figlet.textSync('Manager'));
-        let answer;
-        do {
-            // await this.show_home_manager(user.username);
-            answer = await inquirer.prompt(this.#options_manager);
-            let selectedOptionName = this.#options_manager[0].choices.find(choice => choice.value === answer.options_admin).name;
-
-            switch(answer.options_admin){
-                case 1: // show list of slices
-                    await this.show_slices();
-                    break;
-                case 2: // create slice
-                    await this.show_create_manag(selectedOptionName);
-                    break;
-                case 3: // manage slices
-                    break;
-                case 4: // monitoring resources
-                    break;
-                case 5: // update password
-                    break;
-                case 6: // help
-                    break;
-                case 7:
-                      break;
-                case 0: // logout
-                    break;
-            }
-        } while(answer.options_admin !== 0)
+    async fetchSlices(TOKEN){
+      const response = await fetch('http://localhost:5000/slices', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': TOKEN
+        }
+      });
+      const result = await response.json();
+      return result;
     }
 }
 

@@ -3,6 +3,10 @@ import figlet from "figlet";
 
 class AdministratorFlow{
 
+  constructor(TOKEN){
+    this.TOKEN = TOKEN;
+  }
+
   #USERS = [
     {
       id: 1, 

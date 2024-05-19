@@ -38,7 +38,6 @@ async function launch() {
                 await update_pswd();
                 break;
         }
-        // console.clear();
     } while (answers.option!==0)
     console.log("Cerrando programa...");
 }
@@ -57,53 +56,26 @@ async function login(){
       TOKEN = response.token;
       const decoded = jwt.verify(TOKEN, 'secret');
 
+      console.clear();
       let flow;
       switch(decoded.role){
         case 'admin':
-          flow = new AdministratorFlow();
+          flow = new AdministratorFlow(TOKEN);
           await flow.start();
           break;
         case 'manager':
-          flow = new ManagerFlow();
+          flow = new ManagerFlow(TOKEN);
           await flow.start();
           break;
         case 'client':
-          flow = new ClientFlow();
+          flow = new ClientFlow(TOKEN);
           await flow.start();
           break;
       } 
     }else {
+      console.clear();
       spinner.error({text: 'Credenciales incorrectas'});
     }
-    
-    // if(valid_usr && valid_usr.username === answers.username){
-    
-    //     spinner.success({text: 'Credenciales correctas'});
-
-    //     console.clear();
-    //     console.log(figlet.textSync(valid_usr.role));
-
-    //     // redirecting according role
-    //     let flow;
-    //     switch (valid_usr.role){
-    //         case 'admin':
-    //             flow = new AdministratorFlow();
-    //             await flow.start();
-    //             break;
-    //         case 'manager':
-    //             flow = new ManagerFlow();
-    //             await flow.start(valid_usr);
-    //             break;
-    //         case 'client':
-    //             flow = new ClientFlow();
-    //             await flow.start();
-    //             break;
-    //     }
-    // }
-    // invalid user
-    // else{
-    //     spinner.error({text: 'Credenciales incorrectas'});
-    // }
 }
 
 // update password flow

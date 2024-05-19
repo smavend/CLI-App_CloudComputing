@@ -3,6 +3,10 @@ import figlet from "figlet";
 
 class ClientFlow{
 
+    constructor(TOKEN){
+      this.TOKEN = TOKEN;
+    }
+
     #options_client = [
         {
             type: 'rawlist',
