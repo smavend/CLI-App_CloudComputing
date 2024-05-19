@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import figlet from "figlet";
 
 class AdministratorFlow{
 
@@ -49,6 +50,7 @@ class AdministratorFlow{
     }
 
     async start(){
+      console.log(figlet.textSync('Administrator'));
         let answer;
         do{
             answer = await inquirer.prompt(this.#options_admin);

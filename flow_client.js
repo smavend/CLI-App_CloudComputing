@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import figlet from "figlet";
 
 class ClientFlow{
 
@@ -17,6 +18,7 @@ class ClientFlow{
     ]
 
     async start(){
+      console.log(figlet.textSync('Client'));
         let answer;
         do{
             answer = await inquirer.prompt(this.#options_client);

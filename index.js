@@ -3,118 +3,115 @@
 import inquirer from 'inquirer';
 import figlet from 'figlet';
 import { createSpinner } from 'nanospinner';
+import jwt from 'jsonwebtoken';
 
 import AdministratorFlow from './flow_administrator.js';
 import ManagerFlow from './flow_manager.js';
 import ClientFlow from './flow_client.js';
 
-// for loading animation
-const sleep = (ms = 500) => new Promise((r) => setTimeout(r, ms));
+let TOKEN;
 
-// registered users -> must be from a bd
-const credentials = [
-    {
-        username: 'mavend',
-        email: 'beatriz.manrique@pucp.edu.pe',
-        password: 'mavend',
-        role: 'client'
+async function loginUser(username, password){
+  const response = await fetch('http://localhost:5000/auth', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
     },
-    {
-        username: 'branko',
-        email: 'amanrique068@gmail.com',
-        password: 'branko',
-        role: 'manager'
-    },
-    {
-        username: 'willy',
-        email: 'willy@gmail.com',
-        password: 'willy',
-        role: 'admin'
-    }
-]
+    body: JSON.stringify({username, password})
+  });
+  const result = await response.json();
+  return result;
+}
 
 // main app
 async function launch() {
     let answers;
-    
     do {
         console.log(figlet.textSync("Slice Manager"));
         console.log("¡Bienvenido a la app CLI del orquestador Cloud!"); 
-        answers = await inquirer.prompt(start);
+        answers = await inquirer.prompt(start_options);
         switch(answers.option){
             case 1: // request login
-                await validate();
+                await login();
                 break;
             case 2: // funcion para cambiar de contraseña con correo asociado
                 await update_pswd();
                 break;
         }
-        console.clear();
+        // console.clear();
     } while (answers.option!==0)
-    console.log("...Cerrando programa");
-    process.exit(1);
+    console.log("Cerrando programa...");
 }
 
 // validation of credentials
-async function validate(){
+async function login(){
     console.log("Ingrese sus credenciales\n");
-    const answers = await inquirer.prompt(login);
-    const valid_usr = credentials.find(usr => usr.username === answers.username);
+    const answers = await inquirer.prompt(login_options);
     const spinner = createSpinner('Validando credenciales...').start();
-    await sleep();
-    
-    if(valid_usr && valid_usr.username === answers.username){
-    
-        spinner.success({text: 'Credenciales correctas'});
 
-        console.clear();
-        console.log(figlet.textSync(valid_usr.role));
+    const response = await loginUser(answers.username, answers.password);
 
-        // redirecting according role
-        let flow;
-        switch (valid_usr.role){
-            case 'admin':
-                flow = new AdministratorFlow();
-                await flow.start();
-                break;
-            case 'manager':
-                flow = new ManagerFlow();
-                await flow.start(valid_usr);
-                break;
-            case 'client':
-                flow = new ClientFlow();
-                await flow.start();
-                break;
-        }
+    if (response.message === 'success'){
+      spinner.success({text: 'Credenciales correctas'});
+
+      TOKEN = response.token;
+      const decoded = jwt.verify(TOKEN, 'secret');
+
+      let flow;
+      switch(decoded.role){
+        case 'admin':
+          flow = new AdministratorFlow();
+          await flow.start();
+          break;
+        case 'manager':
+          flow = new ManagerFlow();
+          await flow.start();
+          break;
+        case 'client':
+          flow = new ClientFlow();
+          await flow.start();
+          break;
+      } 
+    }else {
+      spinner.error({text: 'Credenciales incorrectas'});
     }
+    
+    // if(valid_usr && valid_usr.username === answers.username){
+    
+    //     spinner.success({text: 'Credenciales correctas'});
+
+    //     console.clear();
+    //     console.log(figlet.textSync(valid_usr.role));
+
+    //     // redirecting according role
+    //     let flow;
+    //     switch (valid_usr.role){
+    //         case 'admin':
+    //             flow = new AdministratorFlow();
+    //             await flow.start();
+    //             break;
+    //         case 'manager':
+    //             flow = new ManagerFlow();
+    //             await flow.start(valid_usr);
+    //             break;
+    //         case 'client':
+    //             flow = new ClientFlow();
+    //             await flow.start();
+    //             break;
+    //     }
+    // }
     // invalid user
-    else{
-        spinner.error({text: 'Credenciales incorrectas'});
-    }
+    // else{
+    //     spinner.error({text: 'Credenciales incorrectas'});
+    // }
 }
 
 // update password flow
 async function update_pswd(){
 }
 
-// ---------- INQUIRER PROMPTS ---------- //
-
-// infrastructure prompt
-const infrastructure = [
-  {
-    type: 'list',
-    name: 'infrastructure',
-    message: 'Seleccione una infraestructura',
-    choices: [
-      {name: 'Linux', value: 1},
-      {name: 'OpenStack', value: 2},
-      {name: 'Salir', value: 3}
-    ]
-  }
-]
-
 // start app prompt
-const start = [
+const start_options = [
     {
         type: 'list',
         name: 'option',
@@ -128,7 +125,7 @@ const start = [
 ]
 
 // login inputs prompt
-const login = [
+const login_options = [
     {
         name: 'username',
         message: 'Usuario: ',

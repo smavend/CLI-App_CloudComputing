@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import figlet from 'figlet';
 
 class ManagerFlow{
 
@@ -118,8 +119,8 @@ class ManagerFlow{
         console.log('-----\n' + username + ' > Home \n-----');
     }
 
-    async show_create_manag(user, optionName){
-        this.show_home_level1(user.username, optionName);
+    async show_create_manag(optionName){
+        // this.show_home_level1(user.username, optionName);
         const answers = await inquirer.prompt(this.#options_create_slice);
         switch(answers.create_options){
             case 1:
@@ -136,7 +137,7 @@ class ManagerFlow{
 
                 const spinner = createSpinner('Creando Slice ...').start();
                 setTimeout(() => {spinner.stop();}, 1200);
-                menu_manager(user);
+                // menu_manager(user);
                 break;
             case 3:
                 break;
@@ -157,7 +158,8 @@ class ManagerFlow{
       } while (answer.res != 2)
     }
 
-    async start(user){
+    async start(){
+      console.log(figlet.textSync('Manager'));
         let answer;
         do {
             // await this.show_home_manager(user.username);
@@ -169,7 +171,7 @@ class ManagerFlow{
                     await this.show_slices();
                     break;
                 case 2: // create slice
-                    await this.show_create_manag(user,selectedOptionName);
+                    await this.show_create_manag(selectedOptionName);
                     break;
                 case 3: // manage slices
                     break;
