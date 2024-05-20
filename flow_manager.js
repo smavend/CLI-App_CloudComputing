@@ -174,7 +174,7 @@ class ManagerFlow{
     }
 
     async fetchSlices(TOKEN){
-      const response = await fetch('http://localhost:5000/slices', {
+      const response = await fetch('http://127.0.0.1:5000/slices', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
