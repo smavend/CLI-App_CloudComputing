@@ -4,6 +4,7 @@ import inquirer from "inquirer"
 import figlet from "figlet"
 import { createSpinner } from "nanospinner"
 import jwt from "jsonwebtoken"
+import { createHash } from "crypto"
 
 import AdministratorFlow from "./flow_administrator.js"
 import ManagerFlow from "./flow_manager.js"
@@ -14,14 +15,19 @@ let TOKEN
 const IP = "10.20.12.148"
 const PORT = "8080"
 
+function sha256(input) {
+	return createHash("sha256").update(input).digest("hex")
+}
+
 async function loginUser(username, password) {
 	const url = `http://${IP}:${PORT}/auth`
+	const hashedPassword = sha256(password)
 	const response = await fetch(url, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ username, password }),
+		body: JSON.stringify({ username, password: hashedPassword }),
 	})
 	const result = await response.json()
 	return result
