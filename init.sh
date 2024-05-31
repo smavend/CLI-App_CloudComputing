@@ -11,7 +11,7 @@ apt upgrade -y
 validation_node() {
     if command -v node &> /dev/null; then
         node_version=$(node -v | awk -F'.' '{print $1}' | sed 's/^.//')
-        if [ "$node_version" -ge 16 ]; then
+        if [ "$node_version" -ge 18 ]; then
             echo "Requerimiento de node cumplido............................................../"
             npm i
             echo "Programa listo///////////////////////////////////////////////////////////////"
@@ -54,7 +54,7 @@ validation_nvm() {
         echo "Verificando versiones instaladas............................................~"
         if [ "$version" == "none" ]; then
             echo "Instalando version 16.0.0...................................................~"
-            nvm install 16.0.0
+            nvm install 18.0.0
             validation_node
         else
             echo "Seteando versión compatible por defecto................................../"
