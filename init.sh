@@ -14,6 +14,9 @@ validation_node() {
         if [ "$node_version" -ge 18 ]; then
             echo "Requerimiento de node cumplido............................................../"
             npm i
+            echo "Cierre y vuelva a entrar a la terminal para comenzar con el CLI-App........./"
+            echo ""
+            echo ""
             echo "Programa listo///////////////////////////////////////////////////////////////"
         else
             validation_nvm
