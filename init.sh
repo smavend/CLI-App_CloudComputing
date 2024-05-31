@@ -55,6 +55,8 @@ validation_nvm() {
         if [ "$version" == "none" ]; then
             echo "Instalando version 18.0.0...................................................~"
             nvm install 18.0.0
+            nvm use 18.0.0
+
             validation_node
         else
             echo "Seteando versión compatible por defecto................................../"
