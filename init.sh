@@ -46,14 +46,14 @@ validation_nvm() {
         version="none"
         for ver in "${versions[@]}"; do
             major_version=$(echo "$ver" | awk -F'.' '{print $1}')
-            if [ "$major_version" -ge 16 ]; then
+            if [ "$major_version" -ge 18 ]; then
                 version="$ver"
                 break
             fi
         done
         echo "Verificando versiones instaladas............................................~"
         if [ "$version" == "none" ]; then
-            echo "Instalando version 16.0.0...................................................~"
+            echo "Instalando version 18.0.0...................................................~"
             nvm install 18.0.0
             validation_node
         else
