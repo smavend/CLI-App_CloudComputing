@@ -11,7 +11,7 @@ import ClientFlow from "./flow_client.js"
 
 let TOKEN
 
-const IP = "127.0.0.1"
+const IP = "10.20.12.148"
 const PORT = "8080"
 
 async function loginUser(username, password) {
