@@ -3,19 +3,21 @@ import figlet from "figlet";
 
 class AdministratorFlow{
 
-  constructor(TOKEN){
-    this.TOKEN = TOKEN;
-  }
+    constructor(TOKEN){
+        this.TOKEN = TOKEN;
+    }
 
-  #USERS = [
-    {
-      id: 1, 
-      usuario: 'Willy Huallpa', 
-      contraseña: 'willy', 
-      rol: 'regular', 
-    }, 
+    #IP = "10.20.12.148"
+    #BASE_URL = `http://${this.#IP}:8080`
 
-  ]
+    #USERS = [
+        {
+            id: 1, 
+            usuario: 'Willy Huallpa', 
+            contraseña: 'willy', 
+            rol: 'regular', 
+        }, 
+    ]
 
     #options_admin = [
         {
@@ -31,44 +33,106 @@ class AdministratorFlow{
         }
     ]
 
-    #show_users_options = [
-      {
-        type: 'list',
-        name: 'res',
-        message: 'Selecciona una opción:',
-        choices: [
-          {name: 'Ver slices de usuario', value: 1},
-          {name: 'Regresar', value: 2}
-        ]
-      }
+    #options_create_user = [
+        {
+            type: 'input',
+            name: 'usuario',
+            message: 'Ingrese el nombre del usuario: ',
+            validate: (answer) => {
+                if (!answer) {
+                    return 'Ingrese un nombre de usuario';
+                }
+                return true;
+            }
+        },
+        {
+            type: 'password',
+            name: 'contraseña',
+            message: 'Ingrese la contraseña del usuario: ',
+            validate: (answer) => {
+                if (!answer) {
+                    return 'Ingrese una contraseña';
+                }
+                return true;
+            }
+        },
+        {
+            type: 'rawlist',
+            name: 'rol',
+            message: 'Seleccione el rol del usuario: ',
+            choices: [
+                {name: 'Regular', value: 'regular'},
+                {name: 'Administrador', value: 'admin'},
+                {name: 'Manager', value: 'manager'}
+            ]
+        }
     ]
 
-    async show_users(){
-      console.log(`Se encontraron ${this.#USERS.length} slices`);
-      console.table(this.#USERS);
-      let answer;
-      do {
-        answer = await inquirer.prompt(this.#show_users_options);
-        console.log(answer);
-      } while (answer.res != 2)
+    async start(){
+        console.log(figlet.textSync('Administrador'));
+        while (true) {
+            let answer = await inquirer.prompt(this.#options_admin);
+            switch (answer.res) {
+                case 1: // show users
+                    await this.show_users();
+                    break;
+                case 2: // create user
+                    await this.create_user();
+                    break;
+                case 3: // edit user permissions
+                    break;
+                case 4: // logout
+                    console.clear();
+                    return;
+            }
+        }
     }
 
-    async start(){
-      console.log(figlet.textSync('Administrator'));
-        let answer;
-        do{
-            answer = await inquirer.prompt(this.#options_admin);
-            switch(answer.res){
-                case 1:
-                  await this.show_users();
-                  break;
-                case 2:
-                    break;
-                case 3:
-                    break;
-            }
-        } while(answer.res !== 4);
-        console.log('Administrator Flow started');
+    async create_user(){
+        const answer = await inquirer.prompt(this.#options_create_user);
+        const new_user = {
+            id: this.#USERS.length + 1,
+            usuario: answer.usuario,
+            contraseña: answer.contraseña,
+            rol: answer.rol
+        }
+        // await this.post_user(new_user); Uncomment when use headnode server
+        this.#USERS.push(new_user);
+        console.log('Usuario creado exitosamente');
+    }
+
+    async show_users(){
+        // const response = await this.get_users(); Uncomment when use headnode server
+        const response = { message: "success", users: this.#USERS };
+        console.log(`Se encontraron ${response.users.length} usuario(s)`);
+        console.table(response.users);
+    }
+
+    async post_user(){
+        const ENDPOINT = `${this.#BASE_URL}/users`;
+        const response = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+            body: JSON.stringify(new_user),
+        });
+        const data = await response.json();
+        return data;
+    }
+
+    async get_users(){
+        const ENDPOINT = `${this.#BASE_URL}/users`;
+        const response = await fetch(ENDPOINT, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        });
+        const data = await response.json();
+        return data;
     }
 }
 

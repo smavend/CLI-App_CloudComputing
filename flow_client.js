@@ -50,7 +50,7 @@ class ClientFlow {
 			answer = await inquirer.prompt(this.#options_client)
 			switch (answer.res) {
 				case 1: // show slices
-                    await this.showSlices();
+                    await this.show_slices();
 					break
 				case 2: // update passwd
 					break
@@ -63,13 +63,12 @@ class ClientFlow {
 		} while (answer.res !== 4)
 	}
 
-    async showSlices() {
-        // const response = await this.fetchSlices(); descomentar al utilizar servidor de headnode
+    async show_slices() {
+        // const response = await this.get_slices(); descomentar al utilizar servidor de headnode
         const response = "|mostrando slices|";
         console.log(response);
-        let answer;
         while (true) {
-            answer = await inquirer.prompt(this.#options_show_slices);
+            let answer = await inquirer.prompt(this.#options_show_slices);
             if (answer.res === 2) {
                 break;
             }
@@ -80,7 +79,7 @@ class ClientFlow {
         }
     }
 
-    async fetchSlices(){
+    async get_slices(){
         const ENDPOINT = `${this.#BASE_URL}/regularUser/slices`;
         const response = await fetch(ENDPOINT, {
             method: "GET",

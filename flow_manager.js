@@ -162,7 +162,7 @@ class ManagerFlow{
     }
 
     async show_slices(){
-      const response = await this.fetchSlices(this.TOKEN);
+      const response = await this.fetch_slices(this.TOKEN);
       const slices = response.slices;
       console.log(`Se encontraron ${slices.length} slices`);
       console.table(slices);
@@ -173,7 +173,7 @@ class ManagerFlow{
       } while (answer.res != 2)
     }
 
-    async fetchSlices(TOKEN){
+    async fetch_slices(TOKEN){
       const response = await fetch('http://127.0.0.1:5000/slices', {
         method: 'GET',
         headers: {
