@@ -62,7 +62,6 @@ class AdministratorFlow{
             message: 'Seleccione el rol del usuario: ',
             choices: [
                 {name: 'Regular', value: 'regular'},
-                {name: 'Administrador', value: 'admin'},
                 {name: 'Manager', value: 'manager'}
             ]
         }
