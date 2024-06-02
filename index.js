@@ -59,12 +59,14 @@ async function login() {
 	const spinner = createSpinner("Validando credenciales...").start()
 
 	const response = await loginUser(answers.username, answers.password)
+    // const response = { message: "success", token: "token"}
 
 	if (response.message === "success") {
 		spinner.success({ text: "Credenciales correctas" })
 
 		TOKEN = response.token
 		const decoded = jwt.verify(TOKEN, "secret")
+        // const decoded = { role: "client"}
 
 		console.clear()
 		let flow
