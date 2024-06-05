@@ -52,15 +52,15 @@ async function login() {
 	const answers = await inquirer.prompt(login_options)
 	const spinner = createSpinner("Validando credenciales...").start()
 
-	const response = await loginUser(answers.username, answers.password)
-    // const response = { message: "success", token: "token"}
+	// const response = await loginUser(answers.username, answers.password)
+    const response = { message: "success", token: "token"}
 
 	if (response.message === "success") {
 		spinner.success({ text: "Credenciales correctas" })
 
-		TOKEN = response.token
-		const decoded = jwt.verify(TOKEN, "secret")
-        // const decoded = { role: "admin"}
+		// TOKEN = response.token
+		// const decoded = jwt.verify(TOKEN, "secret")
+        const decoded = { role: "manager"}
 
 		console.clear()
 		let flow
