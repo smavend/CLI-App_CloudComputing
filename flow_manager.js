@@ -119,19 +119,13 @@ class ManagerFlow{
             type: 'list',
             name: 'node_1',
             message: 'Seleccione el punto de conexión 1: ',
-            choices: [
-                {name: 'Nodo 1', value: 'node_1'},
-                {name: 'Nodo 2', value: 'node_2'}
-            ]
+            choices: []
         },
         {
             type: 'list',
             name: 'node_2',
             message: 'Seleccione el punto de conexión 2: ',
-            choices: [
-                {name: 'Nodo 1', value: 'node_1'},
-                {name: 'Nodo 2', value: 'node_2'}
-            ]
+            choices: []
         }
     ]
 
@@ -140,9 +134,8 @@ class ManagerFlow{
             type: 'list',
             name: 'vm_name',
             message: 'Seleccione la máquina virtual a borrar: ',
-            choices: [ // TODO: fetch actual vms
-                {name: 'VM1', value: 'vm1'},
-                {name: 'VM2', value: 'vm2'}
+            choices: [
+                {name: 'Cancelar', value: 0}
             ]
         }
     ]
@@ -152,9 +145,8 @@ class ManagerFlow{
             type: 'list',
             name: 'link_name',
             message: 'Seleccione el enlace a borrar: ',
-            choices: [ // TODO: fetch actual links
-                {name: 'Link1', value: 'link1'},
-                {name: 'Link2', value: 'link2'}
+            choices: [
+                {name: 'Cancelar', value: 0}
             ]
         }
     ]
@@ -235,31 +227,79 @@ class ManagerFlow{
         let LINKS = links_created ? links_created : [];
         let STRUCTURE = structure_created ? structure_created : [];
 
+        let delete_or_edit_vm_available = false;
+        let delete_links_available = false;
+        let create_link_available = false;
         while (true){
             let answer = await inquirer.prompt(this.#options_vms_and_links);
             switch (answer.option){
                 case 1:
                     const vm = await this.create_vm();
                     VMS.push(vm);
+                    this.#options_delete_vm[0].choices.unshift({name: vm.vm_name, value: vm.vm_name});
+                    this.#options_create_link[1].choices.unshift({name: vm.vm_name, value: vm.vm_name});
+                    this.#options_create_link[2].choices.unshift({name: vm.vm_name, value: vm.vm_name});
                     break;
                 case 2:
+                    if (!create_link_available){
+                        console.log('Primero debe agregar más de una máquina virtual');
+                        break;
+                    }
                     const link = await this.create_link();
                     LINKS.push(link);
+                    this.#options_delete_link[0].choices.unshift({name: link.link_name, value: link.link_name});
                     break;
                 case 3:
+                    if (!delete_or_edit_vm_available){
+                        break;
+                    }
                     await this.edit_vm();
                     break;
                 case 4:
-                    VMS = await this.delete_vm(VMS);
+                    if (!delete_or_edit_vm_available){
+                        break;
+                    }
+                    const UPDATED_VMS = await this.delete_vm(VMS);
+                    if (UPDATED_VMS){
+                        console.log(UPDATED_VMS);
+                        VMS = UPDATED_VMS;
+                    }
                     break;
                 case 5:
-                    LINKS = await this.delete_link(LINKS);
+                    if (!delete_links_available){
+                        console.log('Primero debe agregar un enlace');
+                        break;
+                    }
+                    const UPDATED_LINKS = await this.delete_link(LINKS);
+                    if (UPDATED_LINKS){
+                        console.log(UPDATED_LINKS);
+                        LINKS = UPDATED_LINKS;
+                    }
                     break;
                 case 0:
                     return {VMS, LINKS, STRUCTURE};
             }
+
+            // CHECK VMS AND LINKS TO SHOW OR NOT OPTIONS
+            if (VMS.length > 0){
+                delete_or_edit_vm_available = true;
+            } else{
+                delete_or_edit_vm_available = false;
+            } 
+
+            if (LINKS.length > 0){
+                delete_links_available = true;
+            } else {
+                delete_links_available = false;
+            }
+
+            if (VMS.length > 1){
+                create_link_available = true;
+            } else {
+                create_link_available = false;
+            }
             console.log(`vms: ${JSON.stringify(VMS)}`)
-            console.log(`links: ${LINKS}`)
+            console.log(`links: ${JSON.stringify(LINKS)}`)
         }
     }
 
@@ -273,13 +313,15 @@ class ManagerFlow{
 
     async delete_vm(VMS){
         const answer = await inquirer.prompt(this.#options_delete_vm);
-        UPDATED_VMS = VMS.filter(vm => vm.name != answer.vm_name);
+        if (answer.vm_name === 0) return; // DELETE CANCELED
+        const UPDATED_VMS = VMS.filter(vm => vm.vm_name != answer.vm_name);
         return UPDATED_VMS;
     }
 
     async delete_link(LINKS){
-        const answer = await inquirer.prompt(this.#options_delete_vm);
-        UPDATED_LINKS = LINKS.filter(link => link.name != answer.link_name);
+        const answer = await inquirer.prompt(this.#options_delete_link);
+        if (answer.link_name === 0) return; // DELETE CANCELED
+        const UPDATED_LINKS = LINKS.filter(link => link.link_name != answer.link_name);
         return UPDATED_LINKS;
     }
 
