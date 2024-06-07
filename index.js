@@ -13,10 +13,11 @@ let TOKEN
 
 const IP = "10.20.12.148"
 const PORT = "8080"
+let URL = `http://${IP}:${PORT}`
 
-async function loginUser(username, password) {
-	const url = `http://${IP}:${PORT}/auth`
-	const response = await fetch(url, {
+async function loginUser(username, password, url) {
+	const urlAuth = `${url}/auth`
+	const response = await fetch(urlAuth, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -52,29 +53,29 @@ async function login() {
 	const answers = await inquirer.prompt(login_options)
 	const spinner = createSpinner("Validando credenciales...").start()
 
-	// const response = await loginUser(answers.username, answers.password)
-    const response = { message: "success", token: "token"}
+	const response = await loginUser(answers.username, answers.password, URL)
+	// const response = { message: "success", token: "token" }
 
 	if (response.message === "success") {
 		spinner.success({ text: "Credenciales correctas" })
 
-		// TOKEN = response.token
-		// const decoded = jwt.verify(TOKEN, "secret")
-        const decoded = { role: "manager"}
+		TOKEN = response.token
+		const decoded = jwt.verify(TOKEN, "secret")
+		// const decoded = { role: "manager" }
 
 		console.clear()
 		let flow
 		switch (decoded.role) {
 			case "admin":
-				flow = new AdministratorFlow(TOKEN)
+				flow = new AdministratorFlow(TOKEN, URL)
 				await flow.start()
 				break
 			case "manager":
-				flow = new ManagerFlow(TOKEN)
+				flow = new ManagerFlow(TOKEN, URL)
 				await flow.start()
 				break
 			case "client":
-				flow = new ClientFlow(TOKEN)
+				flow = new ClientFlow(TOKEN, URL)
 				await flow.start()
 				break
 		}
