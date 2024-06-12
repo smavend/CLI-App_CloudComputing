@@ -7,7 +7,7 @@ class ManagerFlow {
 		this.URL = URL
 	}
 
-    #URL_DEPLOY = "http://10.20.12.148:8080/slices/diag";
+    #URL_DEPLOY = "http://10.20.12.148/slice/deploy";
 
 	#options_manager = [
 		{
@@ -15,7 +15,7 @@ class ManagerFlow {
 			name: "option",
 			message: "Seleccione una opción",
 			choices: [
-				{ name: "Lista de slices", value: 1 },
+				{ name: "Listar slices", value: 1 },
 				{ name: "Crear slice", value: 2 },
 				{ name: "Editar slices", value: 3 },
 				{ name: "Borrar slices", value: 4 },
@@ -78,7 +78,8 @@ class ManagerFlow {
 				{ name: "Editar máquina virtual", value: 3 },
 				{ name: "Borrar máquina virtual", value: 4 },
 				{ name: "Borrar enlace", value: 5 },
-                { name: "Siguiente", value: 6 },
+                { name: "Guardar avance", value: 6 },
+                { name: "Siguiente", value: 7 },
 				{ name: "Cancelar", value: 0 },
 			],
 		},
@@ -200,17 +201,17 @@ class ManagerFlow {
 		const slices = response.slices
 		console.log(`Se encontraron ${slices.length} slices`)
 		console.table(slices)
-		let answer
-		do {
-			answer = await inquirer.prompt(this.#show_slices_options)
-			console.log(answer)
-		} while (answer.res != 2)
+		// let answer
+		// do {
+		// 	answer = await inquirer.prompt(this.#show_slices_options)
+		// 	console.log(answer)
+		// } while (answer.res != 2)
 	}
 
 	async create_slice() {
 		let SLICE = {};
 		let answer = await inquirer.prompt(this.#options_create_slice_start);
-		SLICE.name = answer.slice_name;
+		SLICE.slice_name = answer.slice_name;
         SLICE.zone = answer.zone;
 
 		switch (answer.method) {
@@ -228,18 +229,14 @@ class ManagerFlow {
 
 	async create_slice_from_scratch(SLICE) {
 		console.log("create_slice_from_scratch")
-		const result = await this.create_vms_and_links()
-        if (result) {
+		const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
+        if (DEFINED_SLICE) {
 
-            const { VMS, LINKS, STRUCTURE } = result;
-            SLICE.VMS = VMS;
-            SLICE.LINKS = LINKS;
-            SLICE.STRUCTURE = STRUCTURE;
-            console.log(JSON.stringify(SLICE));
+            console.log(JSON.stringify(DEFINED_SLICE));
 
             const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
             if (answer.option === 1) {
-                await this.deploy_slice(SLICE);
+                await this.deploy_slice(DEFINED_SLICE);
             }
         } else {
             console.log("Creación de slice cancelada");
@@ -262,20 +259,21 @@ class ManagerFlow {
                 "Content-Type": "application/json",
                 Authorization: this.TOKEN,
             },
-            body: JSON.stringify(SLICE.STRUCTURE),
+            body: JSON.stringify(SLICE),
         });
         const result = await response.json();
         console.log("URL: "+JSON.stringify(result));
     }
 
-	async create_vms_and_links(vms_created, links_created, structure_created) {
+	async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
 		let VMS = vms_created ? vms_created : [];
 		let LINKS = links_created ? links_created : [];
 		let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
-		let delete_or_edit_vm_available = false;
-		let delete_links_available = false;
-		let create_link_available = false;
+		let allow_delete_or_edit_vm = false;
+		let allow_delete_links_available = false;
+		let allow_create_link = false;
+        let allow_save_structure = false;
 
 		while (true) {
 			let answer = await inquirer.prompt(this.#options_vms_and_links);
@@ -285,7 +283,7 @@ class ManagerFlow {
 					VMS.push(new_vm);
 					break
 				case 2: // CREATE LINK
-					if (!create_link_available) {
+					if (!allow_create_link) {
 						console.log("Primero debe agregar más de una máquina virtual");
 						break;
 					}
@@ -293,56 +291,72 @@ class ManagerFlow {
 					LINKS.push(new_link);
 					break;
 				case 3: // EDIT VM
-					if (!delete_or_edit_vm_available) {
+					if (!allow_delete_or_edit_vm) {
 						break
 					}
 					await this.edit_vm();
 					break;
 				case 4: // DELETE VM
-					if (!delete_or_edit_vm_available) {
+					if (!allow_delete_or_edit_vm) {
 						break;
 					}
 					const UPDATED_VMS = await this.delete_vm(VMS);
 					if (UPDATED_VMS) {
-						console.log(UPDATED_VMS);
 						VMS = UPDATED_VMS;
 					}
 					break;
 				case 5: // DELETE LINK
-					if (!delete_links_available) {
+					if (!allow_delete_links_available) {
 						console.log("Primero debe agregar un enlace");
 						break;
 					}
 					const UPDATED_LINKS = await this.delete_link(LINKS)
 					if (UPDATED_LINKS) {
-						console.log(UPDATED_LINKS);
 						LINKS = UPDATED_LINKS;
 					}
 					break;
-                case 6: // NEXT
-                    return { VMS, LINKS, STRUCTURE };
+                case 6: // SAVE ADVANCE
+                    if (!allow_save_structure) {
+                        console.log("No hay cambios para guardar");
+                        break;
+                    }
+                    await this.save_advance(SLICE);
+                    break;
+                case 7: // NEXT
+                    return SLICE;
 				case 0:
 					return; 
 			}
 
-			// CHECK VMS AND LINKS TO SHOW OR NOT OPTIONS
+            // UPDATING SLICE OBJECT
+            SLICE.VMS = VMS;
+            SLICE.LINKS = LINKS;
+            SLICE.STRUCTURE = STRUCTURE;
+
+			// CHECK VMS AND LINKS TO ALLOW OR DISALLOW ACTIONS
 			if (VMS.length > 0) {
-				delete_or_edit_vm_available = true
+				allow_delete_or_edit_vm = true
 			} else {
-				delete_or_edit_vm_available = false
+				allow_delete_or_edit_vm = false
 			}
 
 			if (LINKS.length > 0) {
-				delete_links_available = true
+				allow_delete_links_available = true
 			} else {
-				delete_links_available = false
+				allow_delete_links_available = false
 			}
 
 			if (VMS.length > 1) {
-				create_link_available = true
+				allow_create_link = true
 			} else {
-				create_link_available = false
+				allow_create_link = false
 			}
+
+            if (VMS.length > 0) {
+                allow_save_structure = true
+            } else {
+                allow_save_structure = false
+            }
 
 			// console.log(`vms: ${JSON.stringify(VMS)}`);
 			// console.log(`links: ${JSON.stringify(LINKS)}`);
@@ -399,8 +413,13 @@ class ManagerFlow {
 		return UPDATED_LINKS;
 	}
 
+    async save_advance(SLICE) {
+        console.log("Guardando avance...");
+        console.log(JSON.stringify(SLICE));
+    }
+
 	async fetch_slices() {
-		const urlSlices = `${this.URL}/slices`;
+		const urlSlices = `${URL}/slices`;
 		const response = await fetch(urlSlices, {
 			method: "GET",
 			headers: {
