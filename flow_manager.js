@@ -168,6 +168,42 @@ class ManagerFlow {
         }
     ]
 
+	#options_monitoring = [
+		{
+			type: "list",
+			name: "worker",
+			message: "Seleccione un trabajador para monitorear:",
+			choices: [
+				{ name: "Worker 1", value: "worker1" },
+				{ name: "Worker 2", value: "worker2" },
+				{ name: "Worker 3", value: "worker3" },
+			],
+		},
+	]
+
+	async monitor_resources() {
+        let answer = await inquirer.prompt(this.#options_monitoring);
+        const worker = answer.worker;
+        await this.display_worker_metrics(worker);
+    }
+
+    async display_worker_metrics(worker) {
+        const urlWorkerMetrics = `${this.URL}/monitoreo/${worker}`;
+        const response = await fetch(urlWorkerMetrics, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        });
+        const result = await response.json();
+        if (result.message === "success") {
+            console.table(result.data);
+        } else {
+            console.log(result.message);
+        }
+    }
+
 	async start() {
 		console.log(figlet.textSync("Manager"))
 		while (true) {
@@ -184,7 +220,8 @@ class ManagerFlow {
 				case 4:
 					break
 				case 5:
-					break
+					await this.monitor_resources();
+                    break;
 				case 6:
 					break
 				case 7:
