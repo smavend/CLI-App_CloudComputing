@@ -2,12 +2,14 @@ import inquirer from "inquirer"
 import figlet from "figlet"
 
 class ManagerFlow {
-	constructor(TOKEN, URL) {
+	constructor(TOKEN, BASE_URL) {
 		this.TOKEN = TOKEN
-		this.URL = URL
+		this.BASE_URL = BASE_URL
 	}
 
-    #URL_DEPLOY = "http://10.20.12.148/slice/deploy";
+    #ENDPOINT_LIST_SLICES = `http://${this.BASE_URL}/slices`;
+    #ENDPOINT_DEPLOY = `http://${this.BASE_URL}/deploy`;
+    #ENDPOINT_SAVE_SLICE = `http://${this.BASE_URL}/slice`;
 
 	#options_manager = [
 		{
@@ -248,8 +250,16 @@ class ManagerFlow {
 	async create_slice() {
 		let SLICE = {};
 		let answer = await inquirer.prompt(this.#options_create_slice_start);
-		SLICE.slice_name = answer.slice_name;
-        SLICE.zone = answer.zone;
+        SLICE.deployment = { 
+            platform: "linux", 
+            details: { 
+                project_name: answer.slice_name, 
+                network_name: "Network", 
+                subnet_name: "Subnet", 
+                cidr: "", 
+                zone: answer.zone
+            }
+        }
 
 		switch (answer.method) {
 			case "from_scratch":
@@ -290,7 +300,7 @@ class ManagerFlow {
 
     async deploy_slice(SLICE) {
         console.log("Desplegando slice...");
-        const response = await fetch(this.#URL_DEPLOY, {
+        const response = await fetch(this.#ENDPOINT_DEPLOY, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -357,11 +367,14 @@ class ManagerFlow {
                         console.log("No hay cambios para guardar");
                         break;
                     }
-                    await this.save_advance(SLICE);
+                    const response = await this.save_advance(SLICE);
+                    if (response.message === "success") {
+                        console.log("Avance guardado");
+                    } 
                     break;
                 case 7: // NEXT
                     return SLICE;
-				case 0:
+				case 0: // CANCEL
 					return; 
 			}
 
@@ -400,6 +413,20 @@ class ManagerFlow {
             // console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
 		}
 	}
+
+    async save_advance(SLICE) {
+        console.log("Guardando avance...");
+        SLICE.deployment.details.status = "not_deployed";
+        const response = await fetch(this.#ENDPOINT_SAVE_SLICE, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+            body: JSON.stringify(SLICE),
+        });
+        return await response.json();
+    }
 
 	async create_vm(STRUCTURE) {
 		const new_vm = await inquirer.prompt(this.#options_create_vm)
@@ -450,13 +477,8 @@ class ManagerFlow {
 		return UPDATED_LINKS;
 	}
 
-    async save_advance(SLICE) {
-        console.log("Guardando avance...");
-        console.log(JSON.stringify(SLICE));
-    }
-
 	async fetch_slices() {
-		const urlSlices = `${URL}/slices`;
+		const urlSlices = this.#ENDPOINT_LIST_SLICES;
 		const response = await fetch(urlSlices, {
 			method: "GET",
 			headers: {
