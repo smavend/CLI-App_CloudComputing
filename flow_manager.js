@@ -7,9 +7,10 @@ class ManagerFlow {
 		this.BASE_URL = BASE_URL
 	}
 
-    #ENDPOINT_LIST_SLICES = `http://${this.BASE_URL}/slices`;
-    #ENDPOINT_DEPLOY = `http://${this.BASE_URL}/deploy`;
-    #ENDPOINT_SAVE_SLICE = `http://${this.BASE_URL}/slice`;
+    // IMPOSIBLE TO CONATENATE STRING HERE UU
+    #ENDPOINT_LIST_SLICES = "/slices";
+    #ENDPOINT_DEPLOY = "/deployt";
+    #ENDPOINT_SAVE_SLICE = "/slice";
 
 	#options_manager = [
 		{
@@ -300,7 +301,8 @@ class ManagerFlow {
 
     async deploy_slice(SLICE) {
         console.log("Desplegando slice...");
-        const response = await fetch(this.#ENDPOINT_DEPLOY, {
+        const url_deploy = this.BASE_URL+this.#ENDPOINT_DEPLOY;
+        const response = await fetch(url_deploy, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -417,7 +419,8 @@ class ManagerFlow {
     async save_advance(SLICE) {
         console.log("Guardando avance...");
         SLICE.deployment.details.status = "not_deployed";
-        const response = await fetch(this.#ENDPOINT_SAVE_SLICE, {
+        const url_save_advance = this.BASE_URL+this.#ENDPOINT_SAVE_SLICE;
+        const response = await fetch(url_save_advance, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -478,7 +481,7 @@ class ManagerFlow {
 	}
 
 	async fetch_slices() {
-		const urlSlices = this.#ENDPOINT_LIST_SLICES;
+		const urlSlices = this.BASE_URL+this.#ENDPOINT_LIST_SLICES;
 		const response = await fetch(urlSlices, {
 			method: "GET",
 			headers: {
