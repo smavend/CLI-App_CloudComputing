@@ -53,7 +53,7 @@ async function login() {
 	const answers = await inquirer.prompt(login_options)
 	const spinner = createSpinner("Validando credenciales...").start()
 
-	const response = await loginUser(answers.username, answers.password, URL)
+	const response = await loginUser(answers.username, answers.password, BASE_URL)
 	// const response = { message: "success", token: "token" }
 
 	if (response.message === "success") {
