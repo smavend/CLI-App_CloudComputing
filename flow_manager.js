@@ -191,7 +191,7 @@ class ManagerFlow {
     }
 
     async display_worker_metrics(worker) {
-        const urlWorkerMetrics = `${this.URL}/monitoreo/${worker}`;
+        const urlWorkerMetrics = `${this.BASE_URL}/monitoreo/${worker}`;
         const response = await fetch(urlWorkerMetrics, {
             method: "GET",
             headers: {
