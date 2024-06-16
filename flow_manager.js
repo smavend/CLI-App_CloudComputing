@@ -43,6 +43,15 @@ class ManagerFlow {
 	]
 
 	#options_create_slice_start = [
+        {
+            type: "list",
+            name: "platform",
+            message: "Seleccione la plataforma para el slice: ",
+            choices: [
+                { name: "Linux", value: "Linux" },
+                { name: "OpenStack", value: "OpenStack" },
+            ],
+        },
 		{
 			type: "input",
 			name: "slice_name",
@@ -56,6 +65,7 @@ class ManagerFlow {
                 { name: "Zona 1", value: 1 },
                 { name: "Zona 2", value: 2 },
                 { name: "Zona 3", value: 3 },
+                { name: "Automático", value: 0}
             ]
         },
 		{
@@ -69,6 +79,46 @@ class ManagerFlow {
 			],
 		},
 	]
+
+    #options_slice_topology = [
+        {
+            type: "list",
+            name: "topology",
+            message: "Seleccione una topología:",
+            choices: [
+                { name: "Lineal" },
+                { name: "Malla" },
+                { name: "Árbol" },
+                { name: "Anillo" },
+                { name: "Bus" }
+            ]
+        },
+        {
+            type: "number",
+            name: "nodes",
+            message: "Ingrese el número de nodos: ",
+        },
+        {
+			type: "list",
+			name: "vm_os",
+			message: "Seleccione el sistema operativo de la máquina virtual: ",
+			choices: [
+				{ name: "Windows", value: "windows" },
+				{ name: "Linux", value: "linux" },
+				{ name: "MacOS", value: "macos" },
+			],
+		},
+		{
+            type: "list",
+            name: "flavor",
+            message: "Selecciones un flavor para la máquina virtual:",
+            choices: [
+                { name: "Pequeño", value: "small" },
+                { name: "Mediano", value: "medium" },
+                { name: "Grande", value: "large" },
+            ]
+		},
+    ]
 
 	#options_vms_and_links = [
 		{
@@ -252,7 +302,7 @@ class ManagerFlow {
 		let SLICE = {};
 		let answer = await inquirer.prompt(this.#options_create_slice_start);
         SLICE.deployment = { 
-            platform: "linux", 
+            platform: answer.platform, 
             details: { 
                 project_name: answer.slice_name, 
                 network_name: "Network", 
@@ -276,11 +326,11 @@ class ManagerFlow {
 	}
 
 	async create_slice_from_scratch(SLICE) {
-		console.log("create_slice_from_scratch")
+        SLICE.deployment.details.topology = "custom";
 		const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
         if (DEFINED_SLICE) {
 
-            console.log(JSON.stringify(DEFINED_SLICE));
+            // console.log(JSON.stringify(DEFINED_SLICE));
 
             const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
             if (answer.option === 1) {
@@ -293,7 +343,55 @@ class ManagerFlow {
 
     async create_slice_from_topology(SLICE) {
 		console.log("create_slice_from_topology");
+        const answer = await inquirer.prompt(this.#options_slice_topology);
+        if (!this.valid_topology(answer.topology, answer.nodes)) {
+            console.log("Topología inválida");
+            return;
+        }
+        SLICE.deployment.details.topology = answer.topology;
+        const SLICE_WITH_TOPOLOGY = await this.create_topology(SLICE, answer.topology, answer.nodes);
+        const DEFINED_SLICE = await this.create_vms_and_links(SLICE_WITH_TOPOLOGY);
 	}
+
+    valid_topology(topology, nodes) {
+        return true;
+    }
+
+    async create_topology(SLICE, topology, nodes) {
+        switch (topology) {
+            case "Lineal":
+                return this.create_topology_lineal(SLICE, nodes);
+            case "Malla":
+                return this.create_topology_malla(SLICE, nodes);
+            case "Árbol":
+                return this.create_topology_arbol(SLICE, nodes);
+            case "Anillo":
+                return this.create_topology_anillo(SLICE, nodes);
+            case "Bus":
+                return this.create_topology_bus(SLICE, nodes);
+        }
+        return SLICE;
+    }
+
+    create_topology_lineal(SLICE, nodes) {
+
+    }
+
+    create_topology_malla(SLICE, nodes) {
+
+    }
+
+    create_topology_arbol(SLICE, nodes) {
+
+    }
+
+    create_topology_anillo(SLICE, nodes) {
+
+    }
+
+    create_topology_bus(SLICE, nodes) {
+
+    }
 
 	async create_slice_from_template(SLICE) {
 		console.log("create_slice_from_template");
