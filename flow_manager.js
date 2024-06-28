@@ -9,9 +9,9 @@ class ManagerFlow {
 	}
 
 	// IMPOSIBLE TO CONATENATE STRING HERE UU
-	#ENDPOINT_LIST_SLICES = "/slices"
+	//#ENDPOINT_LIST_SLICES = "/slices"
 	#ENDPOINT_DEPLOY = "/deployt"
-	#ENDPOINT_SAVE_SLICE = "/slice"
+	#ENDPOINT_SAVE_SLICE = "/slices"
 
 	#options_manager = [
 		{
