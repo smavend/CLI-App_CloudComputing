@@ -1,5 +1,6 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
+import { handleSessionTimeout } from "./index.js"
 
 class AdministratorFlow {
 	constructor(TOKEN, URL) {
@@ -114,6 +115,12 @@ class AdministratorFlow {
 			},
 			body: JSON.stringify(new_user),
 		})
+
+		if (response.status === 411) {
+			await handleSessionTimeout()
+			return
+		}
+
 		const data = await response.json()
 		return data
 	}
@@ -127,6 +134,12 @@ class AdministratorFlow {
 				Authorization: this.TOKEN,
 			},
 		})
+
+		if (response.status === 411) {
+			await handleSessionTimeout()
+			return
+		}
+
 		const data = await response.json()
 		return data
 	}

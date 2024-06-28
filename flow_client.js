@@ -1,5 +1,6 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
+import { handleSessionTimeout } from "./index.js"
 
 class ClientFlow {
 	constructor(TOKEN, URL) {
@@ -86,6 +87,12 @@ class ClientFlow {
 				Authorization: this.TOKEN,
 			},
 		})
+
+		if (response.status === 411) {
+			await handleSessionTimeout()
+			return
+		}
+
 		const data = await response.json()
 		return data
 	}
