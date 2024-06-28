@@ -2,47 +2,47 @@ import inquirer from "inquirer"
 import figlet from "figlet"
 
 class ManagerFlow {
-	constructor(TOKEN, BASE_URL) {
-		this.TOKEN = TOKEN
-		this.BASE_URL = BASE_URL
-	}
+    constructor(TOKEN, BASE_URL) {
+        this.TOKEN = TOKEN
+        this.BASE_URL = BASE_URL
+    }
 
     // IMPOSIBLE TO CONATENATE STRING HERE UU
     #ENDPOINT_LIST_SLICES = "/slices";
     #ENDPOINT_DEPLOY = "/deployt";
     #ENDPOINT_SAVE_SLICE = "/slice";
 
-	#options_manager = [
-		{
-			type: "list",
-			name: "option",
-			message: "Seleccione una opción",
-			choices: [
-				{ name: "Listar slices", value: 1 },
-				{ name: "Crear slice", value: 2 },
-				{ name: "Editar slices", value: 3 },
-				{ name: "Borrar slices", value: 4 },
-				{ name: "Monitoreo de recursos", value: 5 },
-				{ name: "Cambiar contraseña", value: 6 },
-				{ name: "Ayuda", value: 7 },
-				{ name: "Cerrar sesión", value: 0 },
-			],
-		},
-	]
+    #options_manager = [
+        {
+            type: "list",
+            name: "option",
+            message: "Seleccione una opción",
+            choices: [
+                { name: "Listar slices", value: 1 },
+                { name: "Crear slice", value: 2 },
+                { name: "Editar slices", value: 3 },
+                { name: "Borrar slices", value: 4 },
+                { name: "Monitoreo de recursos", value: 5 },
+                { name: "Cambiar contraseña", value: 6 },
+                { name: "Ayuda", value: 7 },
+                { name: "Cerrar sesión", value: 0 },
+            ],
+        },
+    ]
 
-	#show_slices_options = [
-		{
-			type: "list",
-			name: "res",
-			message: "Selecciona una opción:",
-			choices: [
-				{ name: "Ver detalles de slice", value: 1 },
-				{ name: "Regresar", value: 2 },
-			],
-		},
-	]
+    #show_slices_options = [
+        {
+            type: "list",
+            name: "res",
+            message: "Selecciona una opción:",
+            choices: [
+                { name: "Ver detalles de slice", value: 1 },
+                { name: "Regresar", value: 2 },
+            ],
+        },
+    ]
 
-	#options_create_slice_start = [
+    #options_create_slice_start = [
         {
             type: "list",
             name: "platform",
@@ -52,11 +52,11 @@ class ManagerFlow {
                 { name: "OpenStack", value: "OpenStack" },
             ],
         },
-		{
-			type: "input",
-			name: "slice_name",
-			message: "Ingrese el nombre del slice:",
-		},
+        {
+            type: "input",
+            name: "slice_name",
+            message: "Ingrese el nombre del slice:",
+        },
         {
             type: "list",
             name: "zone",
@@ -65,20 +65,20 @@ class ManagerFlow {
                 { name: "Zona 1", value: 1 },
                 { name: "Zona 2", value: 2 },
                 { name: "Zona 3", value: 3 },
-                { name: "Automático", value: 0}
+                { name: "Automático", value: 0 }
             ]
         },
-		{
-			type: "list",
-			name: "method",
-			message: "Seleccione el medio para crear el slice:",
-			choices: [
-				{ name: "Crear desde cero", value: "from_scratch" },
-				{ name: "Crear desde topología", value: "from_topology" },
-				{ name: "Crear desde plantilla", value: "from_template" },
-			],
-		},
-	]
+        {
+            type: "list",
+            name: "method",
+            message: "Seleccione el medio para crear el slice:",
+            choices: [
+                { name: "Crear desde cero", value: "from_scratch" },
+                { name: "Crear desde topología", value: "from_topology" },
+                { name: "Crear desde plantilla", value: "from_template" },
+            ],
+        },
+    ]
 
     #options_slice_topology = [
         {
@@ -99,16 +99,16 @@ class ManagerFlow {
             message: "Ingrese el número de nodos: ",
         },
         {
-			type: "list",
-			name: "vm_os",
-			message: "Seleccione el sistema operativo de la máquina virtual: ",
-			choices: [
-				{ name: "Windows", value: "windows" },
-				{ name: "Linux", value: "linux" },
-				{ name: "MacOS", value: "macos" },
-			],
-		},
-		{
+            type: "list",
+            name: "vm_os",
+            message: "Seleccione el sistema operativo de la máquina virtual: ",
+            choices: [
+                { name: "Windows", value: "windows" },
+                { name: "Linux", value: "linux" },
+                { name: "MacOS", value: "macos" },
+            ],
+        },
+        {
             type: "list",
             name: "flavor",
             message: "Selecciones un flavor para la máquina virtual:",
@@ -117,44 +117,44 @@ class ManagerFlow {
                 { name: "Mediano", value: "medium" },
                 { name: "Grande", value: "large" },
             ]
-		},
+        },
     ]
 
-	#options_vms_and_links = [
-		{
-			type: "list",
-			name: "option",
-			message: "Seleccione una opción",
-			choices: [
-				{ name: "Agregar máquina virtual", value: 1 },
-				{ name: "Agregar enlace", value: 2 },
-				{ name: "Editar máquina virtual", value: 3 },
-				{ name: "Borrar máquina virtual", value: 4 },
-				{ name: "Borrar enlace", value: 5 },
+    #options_vms_and_links = [
+        {
+            type: "list",
+            name: "option",
+            message: "Seleccione una opción",
+            choices: [
+                { name: "Agregar máquina virtual", value: 1 },
+                { name: "Agregar enlace", value: 2 },
+                { name: "Editar máquina virtual", value: 3 },
+                { name: "Borrar máquina virtual", value: 4 },
+                { name: "Borrar enlace", value: 5 },
                 { name: "Guardar avance", value: 6 },
                 { name: "Siguiente", value: 7 },
-				{ name: "Cancelar", value: 0 },
-			],
-		},
-	]
+                { name: "Cancelar", value: 0 },
+            ],
+        },
+    ]
 
-	#options_create_vm = [
-		{
-			type: "input",
-			name: "vm_name",
-			message: "Ingrese el nombre de la máquina virtual: ",
-		},
-		{
-			type: "list",
-			name: "vm_os",
-			message: "Seleccione el sistema operativo de la máquina virtual: ",
-			choices: [
-				{ name: "Windows", value: "windows" },
-				{ name: "Linux", value: "linux" },
-				{ name: "MacOS", value: "macos" },
-			],
-		},
-		{
+    #options_create_vm = [
+        {
+            type: "input",
+            name: "vm_name",
+            message: "Ingrese el nombre de la máquina virtual: ",
+        },
+        {
+            type: "list",
+            name: "vm_os",
+            message: "Seleccione el sistema operativo de la máquina virtual: ",
+            choices: [
+                { name: "Windows", value: "windows" },
+                { name: "Linux", value: "linux" },
+                { name: "MacOS", value: "macos" },
+            ],
+        },
+        {
             type: "list",
             name: "flavor",
             message: "Selecciones un flavor para la máquina virtual:",
@@ -163,51 +163,51 @@ class ManagerFlow {
                 { name: "Mediano", value: "medium" },
                 { name: "Grande", value: "large" },
             ]
-		},
-		{
-			type: "confirm",
-			name: "vm_internet",
-			message: "¿Brindar acceso a internet a la máquina virtual?",
-		},
-	]
+        },
+        {
+            type: "confirm",
+            name: "vm_internet",
+            message: "¿Brindar acceso a internet a la máquina virtual?",
+        },
+    ]
 
-	#options_create_link = [
-		{
-			type: "input",
-			name: "link_name",
-			message: "Ingrese el nombre del enlace: ",
-		},
-		{
-			type: "list",
-			name: "node_1",
-			message: "Seleccione el punto de conexión 1: ",
-			choices: [],
-		},
-		{
-			type: "list",
-			name: "node_2",
-			message: "Seleccione el punto de conexión 2: ",
-			choices: [],
-		},
-	]
+    #options_create_link = [
+        {
+            type: "input",
+            name: "link_name",
+            message: "Ingrese el nombre del enlace: ",
+        },
+        {
+            type: "list",
+            name: "node_1",
+            message: "Seleccione el punto de conexión 1: ",
+            choices: [],
+        },
+        {
+            type: "list",
+            name: "node_2",
+            message: "Seleccione el punto de conexión 2: ",
+            choices: [],
+        },
+    ]
 
-	#options_delete_vm = [
-		{
-			type: "list",
-			name: "vm_name",
-			message: "Seleccione la máquina virtual a borrar: ",
-			choices: [{ name: "Cancelar", value: 0 }],
-		},
-	]
+    #options_delete_vm = [
+        {
+            type: "list",
+            name: "vm_name",
+            message: "Seleccione la máquina virtual a borrar: ",
+            choices: [{ name: "Cancelar", value: 0 }],
+        },
+    ]
 
-	#options_delete_link = [
-		{
-			type: "list",
-			name: "link_name",
-			message: "Seleccione el enlace a borrar: ",
-			choices: [{ name: "Cancelar", value: 0 }],
-		},
-	]
+    #options_delete_link = [
+        {
+            type: "list",
+            name: "link_name",
+            message: "Seleccione el enlace a borrar: ",
+            choices: [{ name: "Cancelar", value: 0 }],
+        },
+    ]
 
     #options_pre_deploy_slice = [
         {
@@ -221,20 +221,20 @@ class ManagerFlow {
         }
     ]
 
-	#options_monitoring = [
-		{
-			type: "list",
-			name: "worker",
-			message: "Seleccione un trabajador para monitorear:",
-			choices: [
-				{ name: "Worker 1", value: "worker1" },
-				{ name: "Worker 2", value: "worker2" },
-				{ name: "Worker 3", value: "worker3" },
-			],
-		},
-	]
+    #options_monitoring = [
+        {
+            type: "list",
+            name: "worker",
+            message: "Seleccione un trabajador para monitorear:",
+            choices: [
+                { name: "Worker 1", value: "worker1" },
+                { name: "Worker 2", value: "worker2" },
+                { name: "Worker 3", value: "worker3" },
+            ],
+        },
+    ]
 
-	async monitor_resources() {
+    async monitor_resources() {
         let answer = await inquirer.prompt(this.#options_monitoring);
         const worker = answer.worker;
         await this.display_worker_metrics(worker);
@@ -257,77 +257,78 @@ class ManagerFlow {
         }
     }
 
-	async start() {
-		console.log(figlet.textSync("Manager"))
-		while (true) {
-			const answer = await inquirer.prompt(this.#options_manager)
-			switch (answer.option) {
-				case 1:
-					await this.show_slices()
-					break
-				case 2:
-					await this.create_slice()
-					break
-				case 3:
-					break
-				case 4:
-					break
-				case 5:
-					await this.monitor_resources();
+    async start() {
+        console.log(figlet.textSync("Manager"))
+        while (true) {
+            const answer = await inquirer.prompt(this.#options_manager)
+            switch (answer.option) {
+                case 1:
+                    await this.show_slices()
+                    break
+                case 2:
+                    await this.create_slice()
+                    break
+                case 3:
+                    break
+                case 4:
+                    break
+                case 5:
+                    await this.monitor_resources();
                     break;
-				case 6:
-					break
-				case 7:
-					break
-				case 0:
-					console.clear()
-					return
-			}
-		}
-	}
+                case 6:
+                    break
+                case 7:
+                    break
+                case 0:
+                    this.TOKEN = null;
+                    console.clear()
+                    return
+            }
+        }
+    }
 
-	async show_slices() {
-		const response = await this.fetch_slices()
-		const slices = response.slices
-		console.log(`Se encontraron ${slices.length} slices`)
-		console.table(slices)
-		// let answer
-		// do {
-		// 	answer = await inquirer.prompt(this.#show_slices_options)
-		// 	console.log(answer)
-		// } while (answer.res != 2)
-	}
+    async show_slices() {
+        const response = await this.fetch_slices()
+        const slices = response.slices
+        console.log(`Se encontraron ${slices.length} slices`)
+        console.table(slices)
+        // let answer
+        // do {
+        // 	answer = await inquirer.prompt(this.#show_slices_options)
+        // 	console.log(answer)
+        // } while (answer.res != 2)
+    }
 
-	async create_slice() {
-		let SLICE = {};
-		let answer = await inquirer.prompt(this.#options_create_slice_start);
-        SLICE.deployment = { 
-            platform: answer.platform, 
-            details: { 
-                project_name: answer.slice_name, 
-                network_name: "Network", 
-                subnet_name: "Subnet", 
-                cidr: "", 
+    async create_slice() {
+        let SLICE = {};
+        let answer = await inquirer.prompt(this.#options_create_slice_start);
+        SLICE.deployment = {
+            platform: answer.platform,
+            details: {
+                project_name: answer.slice_name,
+                network_name: "Network",
+                subnet_name: "Subnet",
+                cidr: "",
                 zone: answer.zone
             }
         }
 
-		switch (answer.method) {
-			case "from_scratch":
-				answer = await this.create_slice_from_scratch(SLICE)
-				break
-			case "from_topology":
-				answer = await this.create_slice_from_topology(SLICE)
-				break
-			case "from_template":
-				answer = await this.create_slice_from_template(SLICE)
-				break
-		}
-	}
+        switch (answer.method) {
+            case "from_scratch":
+                answer = await this.create_slice_from_scratch(SLICE)
+                break
+            case "from_topology":
+                answer = await this.create_slice_from_topology(SLICE)
+                break
+            case "from_template":
+                answer = await this.create_slice_from_template(SLICE)
+                break
+        }
+    }
 
-	async create_slice_from_scratch(SLICE) {
+    async create_slice_from_scratch(SLICE) {
         SLICE.deployment.details.topology = "custom";
-		const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
+        const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
         if (DEFINED_SLICE) {
 
             // console.log(JSON.stringify(DEFINED_SLICE));
@@ -342,7 +343,7 @@ class ManagerFlow {
     }
 
     async create_slice_from_topology(SLICE) {
-		console.log("create_slice_from_topology");
+        console.log("create_slice_from_topology");
         const answer = await inquirer.prompt(this.#options_slice_topology);
         if (!this.valid_topology(answer.topology, answer.nodes)) {
             console.log("Topología inválida");
@@ -351,7 +352,7 @@ class ManagerFlow {
         SLICE.deployment.details.topology = answer.topology;
         const SLICE_WITH_TOPOLOGY = await this.create_topology(SLICE, answer.topology, answer.nodes);
         const DEFINED_SLICE = await this.create_vms_and_links(SLICE_WITH_TOPOLOGY);
-	}
+    }
 
     valid_topology(topology, nodes) {
         return true;
@@ -393,13 +394,13 @@ class ManagerFlow {
 
     }
 
-	async create_slice_from_template(SLICE) {
-		console.log("create_slice_from_template");
-	}
+    async create_slice_from_template(SLICE) {
+        console.log("create_slice_from_template");
+    }
 
     async deploy_slice(SLICE) {
         console.log("Desplegando slice...");
-        const url_deploy = this.BASE_URL+this.#ENDPOINT_DEPLOY;
+        const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY;
         const response = await fetch(url_deploy, {
             method: "POST",
             headers: {
@@ -409,59 +410,59 @@ class ManagerFlow {
             body: JSON.stringify(SLICE),
         });
         const result = await response.json();
-        console.log("URL: "+JSON.stringify(result));
+        console.log("URL: " + JSON.stringify(result));
     }
 
-	async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
-		let VMS = vms_created ? vms_created : [];
-		let LINKS = links_created ? links_created : [];
-		let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
+    async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
+        let VMS = vms_created ? vms_created : [];
+        let LINKS = links_created ? links_created : [];
+        let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
-		let allow_delete_or_edit_vm = false;
-		let allow_delete_links_available = false;
-		let allow_create_link = false;
+        let allow_delete_or_edit_vm = false;
+        let allow_delete_links_available = false;
+        let allow_create_link = false;
         let allow_save_structure = false;
 
-		while (true) {
-			let answer = await inquirer.prompt(this.#options_vms_and_links);
-			switch (answer.option) {
-				case 1: // CREATE VM
-					const new_vm = await this.create_vm(STRUCTURE);
-					VMS.push(new_vm);
-					break
-				case 2: // CREATE LINK
-					if (!allow_create_link) {
-						console.log("Primero debe agregar más de una máquina virtual");
-						break;
-					}
-					const new_link = await this.create_link(STRUCTURE);
-					LINKS.push(new_link);
-					break;
-				case 3: // EDIT VM
-					if (!allow_delete_or_edit_vm) {
-						break
-					}
-					await this.edit_vm();
-					break;
-				case 4: // DELETE VM
-					if (!allow_delete_or_edit_vm) {
-						break;
-					}
-					const UPDATED_VMS = await this.delete_vm(VMS);
-					if (UPDATED_VMS) {
-						VMS = UPDATED_VMS;
-					}
-					break;
-				case 5: // DELETE LINK
-					if (!allow_delete_links_available) {
-						console.log("Primero debe agregar un enlace");
-						break;
-					}
-					const UPDATED_LINKS = await this.delete_link(LINKS)
-					if (UPDATED_LINKS) {
-						LINKS = UPDATED_LINKS;
-					}
-					break;
+        while (true) {
+            let answer = await inquirer.prompt(this.#options_vms_and_links);
+            switch (answer.option) {
+                case 1: // CREATE VM
+                    const new_vm = await this.create_vm(STRUCTURE);
+                    VMS.push(new_vm);
+                    break
+                case 2: // CREATE LINK
+                    if (!allow_create_link) {
+                        console.log("Primero debe agregar más de una máquina virtual");
+                        break;
+                    }
+                    const new_link = await this.create_link(STRUCTURE);
+                    LINKS.push(new_link);
+                    break;
+                case 3: // EDIT VM
+                    if (!allow_delete_or_edit_vm) {
+                        break
+                    }
+                    await this.edit_vm();
+                    break;
+                case 4: // DELETE VM
+                    if (!allow_delete_or_edit_vm) {
+                        break;
+                    }
+                    const UPDATED_VMS = await this.delete_vm(VMS);
+                    if (UPDATED_VMS) {
+                        VMS = UPDATED_VMS;
+                    }
+                    break;
+                case 5: // DELETE LINK
+                    if (!allow_delete_links_available) {
+                        console.log("Primero debe agregar un enlace");
+                        break;
+                    }
+                    const UPDATED_LINKS = await this.delete_link(LINKS)
+                    if (UPDATED_LINKS) {
+                        LINKS = UPDATED_LINKS;
+                    }
+                    break;
                 case 6: // SAVE ADVANCE
                     if (!allow_save_structure) {
                         console.log("No hay cambios para guardar");
@@ -470,37 +471,37 @@ class ManagerFlow {
                     const response = await this.save_advance(SLICE);
                     if (response.message === "success") {
                         console.log("Avance guardado");
-                    } 
+                    }
                     break;
                 case 7: // NEXT
                     return SLICE;
-				case 0: // CANCEL
-					return; 
-			}
+                case 0: // CANCEL
+                    return;
+            }
 
             // UPDATING SLICE OBJECT
             SLICE.VMS = VMS;
             SLICE.LINKS = LINKS;
             SLICE.STRUCTURE = STRUCTURE;
 
-			// CHECK VMS AND LINKS TO ALLOW OR DISALLOW ACTIONS
-			if (VMS.length > 0) {
-				allow_delete_or_edit_vm = true
-			} else {
-				allow_delete_or_edit_vm = false
-			}
+            // CHECK VMS AND LINKS TO ALLOW OR DISALLOW ACTIONS
+            if (VMS.length > 0) {
+                allow_delete_or_edit_vm = true
+            } else {
+                allow_delete_or_edit_vm = false
+            }
 
-			if (LINKS.length > 0) {
-				allow_delete_links_available = true
-			} else {
-				allow_delete_links_available = false
-			}
+            if (LINKS.length > 0) {
+                allow_delete_links_available = true
+            } else {
+                allow_delete_links_available = false
+            }
 
-			if (VMS.length > 1) {
-				allow_create_link = true
-			} else {
-				allow_create_link = false
-			}
+            if (VMS.length > 1) {
+                allow_create_link = true
+            } else {
+                allow_create_link = false
+            }
 
             if (VMS.length > 0) {
                 allow_save_structure = true
@@ -508,16 +509,16 @@ class ManagerFlow {
                 allow_save_structure = false
             }
 
-			// console.log(`vms: ${JSON.stringify(VMS)}`);
-			// console.log(`links: ${JSON.stringify(LINKS)}`);
+            // console.log(`vms: ${JSON.stringify(VMS)}`);
+            // console.log(`links: ${JSON.stringify(LINKS)}`);
             // console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
-		}
-	}
+        }
+    }
 
     async save_advance(SLICE) {
         console.log("Guardando avance...");
         SLICE.deployment.details.status = "not_deployed";
-        const url_save_advance = this.BASE_URL+this.#ENDPOINT_SAVE_SLICE;
+        const url_save_advance = this.BASE_URL + this.#ENDPOINT_SAVE_SLICE;
         const response = await fetch(url_save_advance, {
             method: "POST",
             headers: {
@@ -529,8 +530,8 @@ class ManagerFlow {
         return await response.json();
     }
 
-	async create_vm(STRUCTURE) {
-		const new_vm = await inquirer.prompt(this.#options_create_vm)
+    async create_vm(STRUCTURE) {
+        const new_vm = await inquirer.prompt(this.#options_create_vm)
         // UPDATING CREATE OPTIONS
         this.#options_delete_vm[0].choices.unshift({
             name: new_vm.vm_name,
@@ -545,51 +546,51 @@ class ManagerFlow {
             value: new_vm.vm_name,
         });
         // UPDATE SLICE STRUCTURE
-        STRUCTURE.visjs.nodes[new_vm.vm_name] = { label: new_vm.vm_name, figure: "server"};
+        STRUCTURE.visjs.nodes[new_vm.vm_name] = { label: new_vm.vm_name, figure: "server" };
         STRUCTURE.metadata.edge_node_mapping[new_vm.vm_name] = [];
         return new_vm;
-	}
+    }
 
-	async create_link(STRUCTURE) {
-		const new_link = await inquirer.prompt(this.#options_create_link);
+    async create_link(STRUCTURE) {
+        const new_link = await inquirer.prompt(this.#options_create_link);
         // UPDATING CREATE OPTIONS
         this.#options_delete_link[0].choices.unshift({
             name: new_link.link_name,
             value: new_link.link_name,
         });
         // UPDATE SLICE STRUCTURE
-        STRUCTURE.visjs.edges[new_link.link_name] = { label: new_link.link_name, color: "purple"};
+        STRUCTURE.visjs.edges[new_link.link_name] = { label: new_link.link_name, color: "purple" };
         STRUCTURE.metadata.edge_node_mapping[new_link.node_1].push(new_link.link_name);
         STRUCTURE.metadata.edge_node_mapping[new_link.node_2].push(new_link.link_name);
         return new_link;
-	}
+    }
 
-	async delete_vm(VMS) {
-		const answer = await inquirer.prompt(this.#options_delete_vm);
-		if (answer.vm_name === 0) return; // DELETE CANCELED
-		const UPDATED_VMS = VMS.filter((vm) => vm.vm_name != answer.vm_name);
-		return UPDATED_VMS;
-	}
+    async delete_vm(VMS) {
+        const answer = await inquirer.prompt(this.#options_delete_vm);
+        if (answer.vm_name === 0) return; // DELETE CANCELED
+        const UPDATED_VMS = VMS.filter((vm) => vm.vm_name != answer.vm_name);
+        return UPDATED_VMS;
+    }
 
-	async delete_link(LINKS) {
-		const answer = await inquirer.prompt(this.#options_delete_link);
-		if (answer.link_name === 0) return; // DELETE CANCELED
-		const UPDATED_LINKS = LINKS.filter((link) => link.link_name != answer.link_name);
-		return UPDATED_LINKS;
-	}
+    async delete_link(LINKS) {
+        const answer = await inquirer.prompt(this.#options_delete_link);
+        if (answer.link_name === 0) return; // DELETE CANCELED
+        const UPDATED_LINKS = LINKS.filter((link) => link.link_name != answer.link_name);
+        return UPDATED_LINKS;
+    }
 
-	async fetch_slices() {
-		const urlSlices = this.BASE_URL+this.#ENDPOINT_LIST_SLICES;
-		const response = await fetch(urlSlices, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: this.TOKEN,
-			},
-		})
-		const result = await response.json();
-		return result;
-	}
+    async fetch_slices() {
+        const urlSlices = this.BASE_URL + this.#ENDPOINT_LIST_SLICES;
+        const response = await fetch(urlSlices, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        })
+        const result = await response.json();
+        return result;
+    }
 }
 
 export default ManagerFlow
