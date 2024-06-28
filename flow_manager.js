@@ -572,7 +572,7 @@ class ManagerFlow {
 	}
 
 	async fetch_slices() {
-		const urlSlices = `${this.URL}/slices`
+		const urlSlices = `${this.BASE_URL}/slices`
 		const response = await fetch(urlSlices, {
 			method: "GET",
 			headers: {
