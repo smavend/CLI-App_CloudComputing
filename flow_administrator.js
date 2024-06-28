@@ -79,6 +79,7 @@ class AdministratorFlow {
 				case 3: // edit user permissions
 					break
 				case 4: // logout
+					this.TOKEN = null
 					console.clear()
 					return
 			}

@@ -57,6 +57,7 @@ class ClientFlow {
 					break
 				case 4: // logout
 					console.clear()
+					this.TOKEN = null
 					break
 			}
 		} while (answer.res !== 4)

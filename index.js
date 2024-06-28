@@ -13,7 +13,7 @@ let TOKEN
 
 const IP = "10.20.12.148"
 const PORT = "8080"
-let URL = `http://${IP}:${PORT}`
+let BASE_URL = `http://${IP}:${PORT}`
 
 async function loginUser(username, password, url) {
 	const urlAuth = `${url}/auth`
@@ -59,7 +59,7 @@ async function login() {
 	const answers = await inquirer.prompt(login_options)
 	const spinner = createSpinner("Validando credenciales...").start()
 
-	const response = await loginUser(answers.username, answers.password, URL)
+	const response = await loginUser(answers.username, answers.password, BASE_URL)
 	// const response = { message: "success", token: "token" }
 
 	if (response.message === "success") {
@@ -73,15 +73,15 @@ async function login() {
 		let flow
 		switch (decoded.role) {
 			case "admin":
-				flow = new AdministratorFlow(TOKEN, URL)
+				flow = new AdministratorFlow(TOKEN, BASE_URL)
 				await flow.start()
 				break
 			case "manager":
-				flow = new ManagerFlow(TOKEN, URL)
+				flow = new ManagerFlow(TOKEN, BASE_URL)
 				await flow.start()
 				break
 			case "client":
-				flow = new ClientFlow(TOKEN, URL)
+				flow = new ClientFlow(TOKEN, BASE_URL)
 				await flow.start()
 				break
 		}

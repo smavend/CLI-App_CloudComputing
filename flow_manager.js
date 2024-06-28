@@ -3,10 +3,15 @@ import figlet from "figlet"
 import { handleSessionTimeout } from "./index.js"
 
 class ManagerFlow {
-	constructor(TOKEN, URL) {
+	constructor(TOKEN, BASE_URL) {
 		this.TOKEN = TOKEN
-		this.URL = URL
+		this.BASE_URL = BASE_URL
 	}
+
+	// IMPOSIBLE TO CONATENATE STRING HERE UU
+	#ENDPOINT_LIST_SLICES = "/slices"
+	#ENDPOINT_DEPLOY = "/deployt"
+	#ENDPOINT_SAVE_SLICE = "/slice"
 
 	#options_manager = [
 		{
@@ -14,7 +19,7 @@ class ManagerFlow {
 			name: "option",
 			message: "Seleccione una opción",
 			choices: [
-				{ name: "Lista de slices", value: 1 },
+				{ name: "Listar slices", value: 1 },
 				{ name: "Crear slice", value: 2 },
 				{ name: "Editar slices", value: 3 },
 				{ name: "Borrar slices", value: 4 },
@@ -40,9 +45,29 @@ class ManagerFlow {
 
 	#options_create_slice_start = [
 		{
+			type: "list",
+			name: "platform",
+			message: "Seleccione la plataforma para el slice: ",
+			choices: [
+				{ name: "Linux", value: "Linux" },
+				{ name: "OpenStack", value: "OpenStack" },
+			],
+		},
+		{
 			type: "input",
 			name: "slice_name",
 			message: "Ingrese el nombre del slice:",
+		},
+		{
+			type: "list",
+			name: "zone",
+			message: "Seleccione una zona de disponibilidad:",
+			choices: [
+				{ name: "Zona 1", value: 1 },
+				{ name: "Zona 2", value: 2 },
+				{ name: "Zona 3", value: 3 },
+				{ name: "Automático", value: 0 },
+			],
 		},
 		{
 			type: "list",
@@ -52,6 +77,46 @@ class ManagerFlow {
 				{ name: "Crear desde cero", value: "from_scratch" },
 				{ name: "Crear desde topología", value: "from_topology" },
 				{ name: "Crear desde plantilla", value: "from_template" },
+			],
+		},
+	]
+
+	#options_slice_topology = [
+		{
+			type: "list",
+			name: "topology",
+			message: "Seleccione una topología:",
+			choices: [
+				{ name: "Lineal" },
+				{ name: "Malla" },
+				{ name: "Árbol" },
+				{ name: "Anillo" },
+				{ name: "Bus" },
+			],
+		},
+		{
+			type: "number",
+			name: "nodes",
+			message: "Ingrese el número de nodos: ",
+		},
+		{
+			type: "list",
+			name: "vm_os",
+			message: "Seleccione el sistema operativo de la máquina virtual: ",
+			choices: [
+				{ name: "Windows", value: "windows" },
+				{ name: "Linux", value: "linux" },
+				{ name: "MacOS", value: "macos" },
+			],
+		},
+		{
+			type: "list",
+			name: "flavor",
+			message: "Selecciones un flavor para la máquina virtual:",
+			choices: [
+				{ name: "Pequeño", value: "small" },
+				{ name: "Mediano", value: "medium" },
+				{ name: "Grande", value: "large" },
 			],
 		},
 	]
@@ -67,7 +132,9 @@ class ManagerFlow {
 				{ name: "Editar máquina virtual", value: 3 },
 				{ name: "Borrar máquina virtual", value: 4 },
 				{ name: "Borrar enlace", value: 5 },
-				{ name: "Siguiente", value: 0 },
+				{ name: "Guardar avance", value: 6 },
+				{ name: "Siguiente", value: 7 },
+				{ name: "Cancelar", value: 0 },
 			],
 		},
 	]
@@ -89,24 +156,19 @@ class ManagerFlow {
 			],
 		},
 		{
-			type: "input",
-			name: "vm_cpu",
-			message: "Ingrese la cantidad de CPUs para la máquina virtual: ",
-		},
-		{
-			type: "input",
-			name: "vm_memoria",
-			message: "Ingrese la memoria RAM para la máquina virtual: ",
-		},
-		{
-			type: "input",
-			name: "vm_storage",
-			message: "Ingrese el almacenamiento disponible para la máquina virtual: ",
+			type: "list",
+			name: "flavor",
+			message: "Selecciones un flavor para la máquina virtual:",
+			choices: [
+				{ name: "Pequeño", value: "small" },
+				{ name: "Mediano", value: "medium" },
+				{ name: "Grande", value: "large" },
+			],
 		},
 		{
 			type: "confirm",
 			name: "vm_internet",
-			message: "¿La máquina virtual tiene acceso a internet?",
+			message: "¿Brindar acceso a internet a la máquina virtual?",
 		},
 	]
 
@@ -148,6 +210,54 @@ class ManagerFlow {
 		},
 	]
 
+	#options_pre_deploy_slice = [
+		{
+			type: "list",
+			name: "option",
+			message: "Seleccione una opción:",
+			choices: [
+				{ name: "Desplegar", value: 1 },
+				{ name: "Regresar", value: 0 },
+			],
+		},
+	]
+
+	#options_monitoring = [
+		{
+			type: "list",
+			name: "worker",
+			message: "Seleccione un trabajador para monitorear:",
+			choices: [
+				{ name: "Worker 1", value: "worker1" },
+				{ name: "Worker 2", value: "worker2" },
+				{ name: "Worker 3", value: "worker3" },
+			],
+		},
+	]
+
+	async monitor_resources() {
+		let answer = await inquirer.prompt(this.#options_monitoring)
+		const worker = answer.worker
+		await this.display_worker_metrics(worker)
+	}
+
+	async display_worker_metrics(worker) {
+		const urlWorkerMetrics = `${this.BASE_URL}/monitoreo/${worker}`
+		const response = await fetch(urlWorkerMetrics, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: this.TOKEN,
+			},
+		})
+		const result = await response.json()
+		if (result.message === "success") {
+			console.table(result.data)
+		} else {
+			console.log(result.message)
+		}
+	}
+
 	async start() {
 		console.log(figlet.textSync("Manager"))
 		while (true) {
@@ -164,12 +274,14 @@ class ManagerFlow {
 				case 4:
 					break
 				case 5:
+					await this.monitor_resources()
 					break
 				case 6:
 					break
 				case 7:
 					break
 				case 0:
+					this.TOKEN = null
 					console.clear()
 					return
 			}
@@ -181,143 +293,268 @@ class ManagerFlow {
 		const slices = response.slices
 		console.log(`Se encontraron ${slices.length} slices`)
 		console.table(slices)
-		let answer
-		do {
-			answer = await inquirer.prompt(this.#show_slices_options)
-			console.log(answer)
-		} while (answer.res != 2)
+		// let answer
+		// do {
+		// 	answer = await inquirer.prompt(this.#show_slices_options)
+		// 	console.log(answer)
+		// } while (answer.res != 2)
 	}
 
 	async create_slice() {
 		let SLICE = {}
 		let answer = await inquirer.prompt(this.#options_create_slice_start)
-		SLICE.name = answer.slice_name
+		SLICE.deployment = {
+			platform: answer.platform,
+			details: {
+				project_name: answer.slice_name,
+				network_name: "Network",
+				subnet_name: "Subnet",
+				cidr: "",
+				zone: answer.zone,
+			},
+		}
 
 		switch (answer.method) {
 			case "from_scratch":
-				answer = await this.create_slice_from_scratch()
+				answer = await this.create_slice_from_scratch(SLICE)
 				break
 			case "from_topology":
-				answer = await this.create_slice_from_topology()
+				answer = await this.create_slice_from_topology(SLICE)
 				break
 			case "from_template":
-				answer = await this.create_slice_from_template()
+				answer = await this.create_slice_from_template(SLICE)
 				break
 		}
 	}
 
-	async create_slice_from_scratch() {
-		console.log("create_slice_from_scratch")
-		await this.create_vms_and_links()
+	async create_slice_from_scratch(SLICE) {
+		SLICE.deployment.details.topology = "custom"
+		const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
+		if (DEFINED_SLICE) {
+			// console.log(JSON.stringify(DEFINED_SLICE));
+
+			const answer = await inquirer.prompt(this.#options_pre_deploy_slice)
+			if (answer.option === 1) {
+				await this.deploy_slice(DEFINED_SLICE)
+			}
+		} else {
+			console.log("Creación de slice cancelada")
+		}
 	}
 
-	async create_slice_from_topology() {
+	async create_slice_from_topology(SLICE) {
 		console.log("create_slice_from_topology")
+		const answer = await inquirer.prompt(this.#options_slice_topology)
+		if (!this.valid_topology(answer.topology, answer.nodes)) {
+			console.log("Topología inválida")
+			return
+		}
+		SLICE.deployment.details.topology = answer.topology
+		const SLICE_WITH_TOPOLOGY = await this.create_topology(SLICE, answer.topology, answer.nodes)
+		const DEFINED_SLICE = await this.create_vms_and_links(SLICE_WITH_TOPOLOGY)
 	}
 
-	async create_slice_from_template() {
+	valid_topology(topology, nodes) {
+		return true
+	}
+
+	async create_topology(SLICE, topology, nodes) {
+		switch (topology) {
+			case "Lineal":
+				return this.create_topology_lineal(SLICE, nodes)
+			case "Malla":
+				return this.create_topology_malla(SLICE, nodes)
+			case "Árbol":
+				return this.create_topology_arbol(SLICE, nodes)
+			case "Anillo":
+				return this.create_topology_anillo(SLICE, nodes)
+			case "Bus":
+				return this.create_topology_bus(SLICE, nodes)
+		}
+		return SLICE
+	}
+
+	create_topology_lineal(SLICE, nodes) {}
+
+	create_topology_malla(SLICE, nodes) {}
+
+	create_topology_arbol(SLICE, nodes) {}
+
+	create_topology_anillo(SLICE, nodes) {}
+
+	create_topology_bus(SLICE, nodes) {}
+
+	async create_slice_from_template(SLICE) {
 		console.log("create_slice_from_template")
 	}
 
-	async create_vms_and_links(vms_created, links_created, structure_created) {
+	async deploy_slice(SLICE) {
+		console.log("Desplegando slice...")
+		const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY
+		const response = await fetch(url_deploy, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: this.TOKEN,
+			},
+			body: JSON.stringify(SLICE),
+		})
+		const result = await response.json()
+		console.log("URL: " + JSON.stringify(result))
+	}
+
+	async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
 		let VMS = vms_created ? vms_created : []
 		let LINKS = links_created ? links_created : []
-		let STRUCTURE = structure_created ? structure_created : []
+		let STRUCTURE = structure_created
+			? structure_created
+			: { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } }
 
-		let delete_or_edit_vm_available = false
-		let delete_links_available = false
-		let create_link_available = false
+		let allow_delete_or_edit_vm = false
+		let allow_delete_links_available = false
+		let allow_create_link = false
+		let allow_save_structure = false
+
 		while (true) {
 			let answer = await inquirer.prompt(this.#options_vms_and_links)
 			switch (answer.option) {
-				case 1:
-					const vm = await this.create_vm()
-					VMS.push(vm)
-					this.#options_delete_vm[0].choices.unshift({
-						name: vm.vm_name,
-						value: vm.vm_name,
-					})
-					this.#options_create_link[1].choices.unshift({
-						name: vm.vm_name,
-						value: vm.vm_name,
-					})
-					this.#options_create_link[2].choices.unshift({
-						name: vm.vm_name,
-						value: vm.vm_name,
-					})
+				case 1: // CREATE VM
+					const new_vm = await this.create_vm(STRUCTURE)
+					VMS.push(new_vm)
 					break
-				case 2:
-					if (!create_link_available) {
+				case 2: // CREATE LINK
+					if (!allow_create_link) {
 						console.log("Primero debe agregar más de una máquina virtual")
 						break
 					}
-					const link = await this.create_link()
-					LINKS.push(link)
-					this.#options_delete_link[0].choices.unshift({
-						name: link.link_name,
-						value: link.link_name,
-					})
+					const new_link = await this.create_link(STRUCTURE)
+					LINKS.push(new_link)
 					break
-				case 3:
-					if (!delete_or_edit_vm_available) {
+				case 3: // EDIT VM
+					if (!allow_delete_or_edit_vm) {
 						break
 					}
 					await this.edit_vm()
 					break
-				case 4:
-					if (!delete_or_edit_vm_available) {
+				case 4: // DELETE VM
+					if (!allow_delete_or_edit_vm) {
 						break
 					}
 					const UPDATED_VMS = await this.delete_vm(VMS)
 					if (UPDATED_VMS) {
-						console.log(UPDATED_VMS)
 						VMS = UPDATED_VMS
 					}
 					break
-				case 5:
-					if (!delete_links_available) {
+				case 5: // DELETE LINK
+					if (!allow_delete_links_available) {
 						console.log("Primero debe agregar un enlace")
 						break
 					}
 					const UPDATED_LINKS = await this.delete_link(LINKS)
 					if (UPDATED_LINKS) {
-						console.log(UPDATED_LINKS)
 						LINKS = UPDATED_LINKS
 					}
 					break
-				case 0:
-					return { VMS, LINKS, STRUCTURE }
+				case 6: // SAVE ADVANCE
+					if (!allow_save_structure) {
+						console.log("No hay cambios para guardar")
+						break
+					}
+					const response = await this.save_advance(SLICE)
+					if (response.message === "success") {
+						console.log("Avance guardado")
+					}
+					break
+				case 7: // NEXT
+					return SLICE
+				case 0: // CANCEL
+					return
 			}
 
-			// CHECK VMS AND LINKS TO SHOW OR NOT OPTIONS
+			// UPDATING SLICE OBJECT
+			SLICE.VMS = VMS
+			SLICE.LINKS = LINKS
+			SLICE.STRUCTURE = STRUCTURE
+
+			// CHECK VMS AND LINKS TO ALLOW OR DISALLOW ACTIONS
 			if (VMS.length > 0) {
-				delete_or_edit_vm_available = true
+				allow_delete_or_edit_vm = true
 			} else {
-				delete_or_edit_vm_available = false
+				allow_delete_or_edit_vm = false
 			}
 
 			if (LINKS.length > 0) {
-				delete_links_available = true
+				allow_delete_links_available = true
 			} else {
-				delete_links_available = false
+				allow_delete_links_available = false
 			}
 
 			if (VMS.length > 1) {
-				create_link_available = true
+				allow_create_link = true
 			} else {
-				create_link_available = false
+				allow_create_link = false
 			}
-			console.log(`vms: ${JSON.stringify(VMS)}`)
-			console.log(`links: ${JSON.stringify(LINKS)}`)
+
+			if (VMS.length > 0) {
+				allow_save_structure = true
+			} else {
+				allow_save_structure = false
+			}
+
+			// console.log(`vms: ${JSON.stringify(VMS)}`);
+			// console.log(`links: ${JSON.stringify(LINKS)}`);
+			// console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
 		}
 	}
 
-	async create_vm() {
-		return await inquirer.prompt(this.#options_create_vm)
+	async save_advance(SLICE) {
+		console.log("Guardando avance...")
+		SLICE.deployment.details.status = "not_deployed"
+		const url_save_advance = this.BASE_URL + this.#ENDPOINT_SAVE_SLICE
+		const response = await fetch(url_save_advance, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: this.TOKEN,
+			},
+			body: JSON.stringify(SLICE),
+		})
+		return await response.json()
 	}
 
-	async create_link() {
-		return await inquirer.prompt(this.#options_create_link)
+	async create_vm(STRUCTURE) {
+		const new_vm = await inquirer.prompt(this.#options_create_vm)
+		// UPDATING CREATE OPTIONS
+		this.#options_delete_vm[0].choices.unshift({
+			name: new_vm.vm_name,
+			value: new_vm.vm_name,
+		})
+		this.#options_create_link[1].choices.unshift({
+			name: new_vm.vm_name,
+			value: new_vm.vm_name,
+		})
+		this.#options_create_link[2].choices.unshift({
+			name: new_vm.vm_name,
+			value: new_vm.vm_name,
+		})
+		// UPDATE SLICE STRUCTURE
+		STRUCTURE.visjs.nodes[new_vm.vm_name] = { label: new_vm.vm_name, figure: "server" }
+		STRUCTURE.metadata.edge_node_mapping[new_vm.vm_name] = []
+		return new_vm
+	}
+
+	async create_link(STRUCTURE) {
+		const new_link = await inquirer.prompt(this.#options_create_link)
+		// UPDATING CREATE OPTIONS
+		this.#options_delete_link[0].choices.unshift({
+			name: new_link.link_name,
+			value: new_link.link_name,
+		})
+		// UPDATE SLICE STRUCTURE
+		STRUCTURE.visjs.edges[new_link.link_name] = { label: new_link.link_name, color: "purple" }
+		STRUCTURE.metadata.edge_node_mapping[new_link.node_1].push(new_link.link_name)
+		STRUCTURE.metadata.edge_node_mapping[new_link.node_2].push(new_link.link_name)
+		return new_link
 	}
 
 	async delete_vm(VMS) {
