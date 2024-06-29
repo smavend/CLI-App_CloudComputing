@@ -1,6 +1,5 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
-import { launch } from "./index.js"
 
 class AdministratorFlow {
 	constructor(TOKEN, URL) {
@@ -118,7 +117,7 @@ class AdministratorFlow {
 		})
 
 		if (response.status === 411) {
-			await launch(true)
+			console.clear()
 			return
 		}
 

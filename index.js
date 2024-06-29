@@ -29,39 +29,22 @@ async function loginUser(username, password, url) {
 }
 
 // main app
-export async function launch(expired) {
+export async function launch() {
 	let answers
-	if (expired) {
-		do {
-			console.log(figlet.textSync("Slice Manager"))
-			console.log("Sesión expirada. Por favor, inicie sesión nuevamente.")
-			answers = await inquirer.prompt(start_options)
-			switch (answers.option) {
-				case 1: // request login
-					await login()
-					break
-				case 2: // funcion para cambiar de contraseña con correo asociado
-					await update_pswd()
-					break
-			}
-		} while (answers.option !== 0)
-		console.log("Cerrando programa...")
-	} else {
-		do {
-			console.log(figlet.textSync("Slice Manager"))
-			console.log("¡Bienvenido a la app CLI del orquestador Cloud!")
-			answers = await inquirer.prompt(start_options)
-			switch (answers.option) {
-				case 1: // request login
-					await login()
-					break
-				case 2: // funcion para cambiar de contraseña con correo asociado
-					await update_pswd()
-					break
-			}
-		} while (answers.option !== 0)
-		console.log("Cerrando programa...")
-	}
+	do {
+		console.log(figlet.textSync("Slice Manager"))
+		console.log("¡Bienvenido a la app CLI del orquestador Cloud!")
+		answers = await inquirer.prompt(start_options)
+		switch (answers.option) {
+			case 1: // request login
+				await login()
+				break
+			case 2: // funcion para cambiar de contraseña con correo asociado
+				await update_pswd()
+				break
+		}
+	} while (answers.option !== 0)
+	console.log("Cerrando programa...")
 }
 
 // validation of credentials

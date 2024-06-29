@@ -1,6 +1,6 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
-import { launch } from "./index.js"
+import { createSpinner } from "nanospinner"
 
 class ManagerFlow {
 	constructor(TOKEN, BASE_URL) {
@@ -259,40 +259,57 @@ class ManagerFlow {
 	}
 
 	async start() {
-		console.log(figlet.textSync("Manager"))
-		while (true) {
-			const answer = await inquirer.prompt(this.#options_manager)
-			switch (answer.option) {
-				case 1:
-					await this.show_slices()
-					break
-				case 2:
-					await this.create_slice()
-					break
-				case 3:
-					break
-				case 4:
-					break
-				case 5:
-					await this.monitor_resources()
-					break
-				case 6:
-					break
-				case 7:
-					break
-				case 0:
-					this.TOKEN = null
-					console.clear()
-					return
+		const spinner = createSpinner()
+		try {
+			console.log(figlet.textSync("Manager"))
+			while (true) {
+				const answer = await inquirer.prompt(this.#options_manager)
+				switch (answer.option) {
+					case 1:
+						await this.show_slices()
+						break
+					case 2:
+						await this.create_slice()
+						break
+					case 3:
+						break
+					case 4:
+						break
+					case 5:
+						await this.monitor_resources()
+						break
+					case 6:
+						break
+					case 7:
+						break
+					case 0:
+						this.TOKEN = null
+						console.clear()
+						return
+				}
+			}
+		} catch (error) {
+			if (error.message === "StopStartLoop") {
+				this.TOKEN = null
+				console.clear()
+				spinner.warn({ text: "Sesión expirada. Por favor, inicie sesión nuevamente." })
 			}
 		}
 	}
 
 	async show_slices() {
-		const response = await this.fetch_slices()
-		const slices = response.slices
-		console.log(`Se encontraron ${slices.length} slices`)
-		console.table(slices)
+		try {
+			const response = await this.fetch_slices()
+
+			const slices = response.slices
+			console.log(`Se encontraron ${slices.length} slices`)
+			console.table(slices)
+		} catch (error) {
+			if (error.message === "StopStartLoop") {
+				throw error
+			}
+		}
+
 		// let answer
 		// do {
 		// 	answer = await inquirer.prompt(this.#show_slices_options)
@@ -581,8 +598,8 @@ class ManagerFlow {
 			},
 		})
 		if (response.status === 411) {
-			await launch(true)
-			return
+			console.clear()
+			throw new Error("StopStartLoop")
 		}
 		const result = await response.json()
 		return result
