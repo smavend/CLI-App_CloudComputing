@@ -331,6 +331,7 @@ class ManagerFlow {
 				this.TOKEN = null
 				console.clear()
 				spinner.warn({ text: "Sesión expirada. Por favor, inicie sesión nuevamente." })
+				throw error
 			}
 		}
 	}
