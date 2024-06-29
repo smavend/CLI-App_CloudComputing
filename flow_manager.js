@@ -316,7 +316,7 @@ class ManagerFlow {
                         await this.show_slices()
                         break
                     case 2:
-                        await this.create_slice()
+                        await this.pre_create_slice()
                         break
                     case 3:
                         break
