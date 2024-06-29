@@ -8,7 +8,6 @@ class ManagerFlow {
         this.BASE_URL = BASE_URL
     }
 
-    // IMPOSIBLE TO CONATENATE STRING HERE UU
     #ENDPOINT_LIST_SLICES = "/slices";
     #ENDPOINT_DEPLOY = "/slices";
     #ENDPOINT_DRAFT_SLICE = "/slices/draft";
@@ -413,18 +412,22 @@ class ManagerFlow {
     async create_slice_from_scratch(SLICE) {
         SLICE.deployment.details.topology = "custom";
         while (true) {
-            const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
-            if (DEFINED_SLICE) {
-
-                console.log(JSON.stringify(DEFINED_SLICE));
-
-                const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
-                if (answer.option === 1) {
-                    await this.deploy_slice(DEFINED_SLICE);
-                    break;
-                }
-            } else {
+            const response_creation = await this.create_vms_and_links(SLICE)
+            if (response_creation === 0) {
+                console.log("Saliendo de la creación de slice");
+                break;
+            }
+            if (!response_creation) {
                 console.log("La creación del slice ha sido cancelada");
+                break;
+            }
+
+            DEFINED_SLICE = response_creation;
+            console.log(JSON.stringify(DEFINED_SLICE));
+
+            const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
+            if (answer.option === 1) {
+                await this.deploy_slice(DEFINED_SLICE);
                 break;
             }
         }
@@ -563,9 +566,9 @@ class ManagerFlow {
                     }
                     const response = await this.save_advance(SLICE);
                     if (response.message === "success") {
-                        console.log("Avance guardado");
+                        console.log("Avance guardado correctamente");
                     }
-                    return;
+                    return 0;
                 case 7: // NEXT
                     return SLICE;
                 case 0: // CANCEL
@@ -698,6 +701,7 @@ class ManagerFlow {
             },
         })
         const result = await response.json();
+        if (result.slices.length === 0) return;
         for (let slice of result.slices) {
             this.#options_create_slice[0].choices.unshift({ name: "Continuar con slice: " + slice.deployment.details.project_name })
         }
