@@ -26,6 +26,7 @@ class ManagerFlow {
 				{ name: "Monitoreo de recursos", value: 5 },
 				{ name: "Cambiar contraseña", value: 6 },
 				{ name: "Ayuda", value: 7 },
+				{ name: "Ver Logs", value: 8 },
 				{ name: "Cerrar sesión", value: 0 },
 			],
 		},
@@ -258,6 +259,40 @@ class ManagerFlow {
 		}
 	}
 
+	async displayLogs() {
+		const urlLogs = `${this.BASE_URL}/logs`
+		try {
+			const response = await fetch(urlLogs, {
+				method: "GET",
+			})
+			const result = await response.json()
+			if (result.message === "success") {
+				console.log("\x1b[36m%s\x1b[0m", "Últimos 25 registros del archivo:") // Color cyan para el título
+				const logs = result.data.split("\n").slice(-25) // Obtener solo las últimas 25 líneas
+
+				logs.forEach((line) => {
+					if (line.trim() !== "") {
+						// Buscar y cambiar color del texto entre corchetes [authModule] a verde
+						const coloredLine = line.replace(/\[(.*?)\]/g, "\x1b[32m[$1]\x1b[0m")
+
+						const parts = coloredLine.split(" - ")
+						if (parts.length >= 2) {
+							const dateTime = parts[0].trim()
+							const message = parts.slice(1).join(" - ").trim()
+							console.log("\x1b[35m%s\x1b[0m", dateTime, "\t", message) // Color magenta para fecha/hora
+						} else {
+							console.log(coloredLine) // Imprimir la línea completa si no se puede dividir
+						}
+					}
+				})
+			} else {
+				console.log("Archivo de registro no encontrado")
+			}
+		} catch (error) {
+			console.error("Error al obtener los registros:", error)
+		}
+	}
+
 	async start() {
 		const spinner = createSpinner()
 		try {
@@ -281,6 +316,9 @@ class ManagerFlow {
 					case 6:
 						break
 					case 7:
+						break
+					case 8:
+						await this.displayLogs()
 						break
 					case 0:
 						this.TOKEN = null
