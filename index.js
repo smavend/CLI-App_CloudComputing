@@ -48,6 +48,7 @@ export async function launch() {
 		console.log("Cerrando programa...")
 	} catch (error) {
 		if (error.message === "StopStartLoop") {
+			console.log(figlet.textSync("Slice Manager"))
 			await login()
 			do {
 				console.log(figlet.textSync("Slice Manager"))
