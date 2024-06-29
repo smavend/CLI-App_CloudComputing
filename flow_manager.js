@@ -9,8 +9,8 @@ class ManagerFlow {
 
     // IMPOSIBLE TO CONATENATE STRING HERE UU
     #ENDPOINT_LIST_SLICES = "/slices";
-    #ENDPOINT_DEPLOY = "/deployt";
-    #ENDPOINT_SAVE_SLICE = "/slice";
+    #ENDPOINT_DEPLOY = "/slices";
+    #ENDPOINT_DRAFT_SLICE = "/slices/draft";
 
     #options_manager = [
         {
@@ -40,6 +40,18 @@ class ManagerFlow {
                 { name: "Regresar", value: 2 },
             ],
         },
+    ]
+
+    #options_create_slice = [
+        {
+            type: "list",
+            name: "option",
+            message: "Seleccione continuar con su slice o crear uno nuevo: ",
+            choices: [
+                { name: "Crear slice nuevo", value: 0 },
+                { name: "Regresar", value: -1 }
+            ]
+        }
     ]
 
     #options_create_slice_start = [
@@ -266,7 +278,7 @@ class ManagerFlow {
                     await this.show_slices()
                     break
                 case 2:
-                    await this.create_slice()
+                    await this.pre_create_slice()
                     break
                 case 3:
                     break
@@ -288,15 +300,30 @@ class ManagerFlow {
     }
 
     async show_slices() {
-        const response = await this.fetch_slices()
-        const slices = response.slices
-        console.log(`Se encontraron ${slices.length} slices`)
-        console.table(slices)
+        const response = await this.fetch_slices();
+        const slices = response.slices;
+        console.log(`Se encontraron ${slices.length} slices`);
+        console.table(slices);
         // let answer
         // do {
         // 	answer = await inquirer.prompt(this.#show_slices_options)
         // 	console.log(answer)
         // } while (answer.res != 2)
+    }
+
+
+    async pre_create_slice() {
+        await this.fetch_draft_slices();
+        let answer = await inquirer.prompt(this.#options_create_slice);
+        switch (answer.option) {
+            case 0: // CREATE NEW SLICE
+                await this.create_slice();
+                break;
+            case -1: // BACK
+                break;
+            default: // CONTINUE CREATE SLICE
+                break;
+        }
     }
 
     async create_slice() {
@@ -327,11 +354,12 @@ class ManagerFlow {
     }
 
     async create_slice_from_scratch(SLICE) {
+        // SLICE.manager = "id";
         SLICE.deployment.details.topology = "custom";
         const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
         if (DEFINED_SLICE) {
 
-            // console.log(JSON.stringify(DEFINED_SLICE));
+            console.log(JSON.stringify(DEFINED_SLICE));
 
             const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
             if (answer.option === 1) {
@@ -400,6 +428,7 @@ class ManagerFlow {
 
     async deploy_slice(SLICE) {
         console.log("Desplegando slice...");
+
         const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY;
         const response = await fetch(url_deploy, {
             method: "POST",
@@ -414,8 +443,6 @@ class ManagerFlow {
     }
 
     async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
-        let VMS = vms_created ? vms_created : [];
-        let LINKS = links_created ? links_created : [];
         let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
         let allow_delete_or_edit_vm = false;
@@ -423,20 +450,21 @@ class ManagerFlow {
         let allow_create_link = false;
         let allow_save_structure = false;
 
+        let vms_number;
+        let links_number;
+
         while (true) {
             let answer = await inquirer.prompt(this.#options_vms_and_links);
             switch (answer.option) {
                 case 1: // CREATE VM
-                    const new_vm = await this.create_vm(STRUCTURE);
-                    VMS.push(new_vm);
+                    await this.create_vm(STRUCTURE);
                     break
                 case 2: // CREATE LINK
                     if (!allow_create_link) {
                         console.log("Primero debe agregar más de una máquina virtual");
                         break;
                     }
-                    const new_link = await this.create_link(STRUCTURE);
-                    LINKS.push(new_link);
+                    await this.create_link(STRUCTURE);
                     break;
                 case 3: // EDIT VM
                     if (!allow_delete_or_edit_vm) {
@@ -450,7 +478,7 @@ class ManagerFlow {
                     }
                     const UPDATED_VMS = await this.delete_vm(VMS);
                     if (UPDATED_VMS) {
-                        VMS = UPDATED_VMS;
+                        // VMS = UPDATED_VMS;
                     }
                     break;
                 case 5: // DELETE LINK
@@ -460,7 +488,7 @@ class ManagerFlow {
                     }
                     const UPDATED_LINKS = await this.delete_link(LINKS)
                     if (UPDATED_LINKS) {
-                        LINKS = UPDATED_LINKS;
+                        // LINKS = UPDATED_LINKS;
                     }
                     break;
                 case 6: // SAVE ADVANCE
@@ -480,30 +508,30 @@ class ManagerFlow {
             }
 
             // UPDATING SLICE OBJECT
-            SLICE.VMS = VMS;
-            SLICE.LINKS = LINKS;
-            SLICE.STRUCTURE = STRUCTURE;
+            SLICE.structure = STRUCTURE;
+            vms_number = Object.keys(STRUCTURE.visjs.nodes).length;
+            links_number = Object.keys(STRUCTURE.visjs.edges).length;
 
             // CHECK VMS AND LINKS TO ALLOW OR DISALLOW ACTIONS
-            if (VMS.length > 0) {
+            if (vms_number > 0) {
                 allow_delete_or_edit_vm = true
             } else {
                 allow_delete_or_edit_vm = false
             }
 
-            if (LINKS.length > 0) {
+            if (links_number > 0) {
                 allow_delete_links_available = true
             } else {
                 allow_delete_links_available = false
             }
 
-            if (VMS.length > 1) {
+            if (vms_number > 1) {
                 allow_create_link = true
             } else {
                 allow_create_link = false
             }
 
-            if (VMS.length > 0) {
+            if (vms_number > 0) {
                 allow_save_structure = true
             } else {
                 allow_save_structure = false
@@ -511,14 +539,14 @@ class ManagerFlow {
 
             // console.log(`vms: ${JSON.stringify(VMS)}`);
             // console.log(`links: ${JSON.stringify(LINKS)}`);
-            // console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
+            console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
         }
     }
 
     async save_advance(SLICE) {
         console.log("Guardando avance...");
         SLICE.deployment.details.status = "not_deployed";
-        const url_save_advance = this.BASE_URL + this.#ENDPOINT_SAVE_SLICE;
+        const url_save_advance = this.BASE_URL + this.#ENDPOINT_DRAFT_SLICE;
         const response = await fetch(url_save_advance, {
             method: "POST",
             headers: {
@@ -548,7 +576,6 @@ class ManagerFlow {
         // UPDATE SLICE STRUCTURE
         STRUCTURE.visjs.nodes[new_vm.vm_name] = { label: new_vm.vm_name, figure: "server" };
         STRUCTURE.metadata.edge_node_mapping[new_vm.vm_name] = [];
-        return new_vm;
     }
 
     async create_link(STRUCTURE) {
@@ -562,7 +589,6 @@ class ManagerFlow {
         STRUCTURE.visjs.edges[new_link.link_name] = { label: new_link.link_name, color: "purple" };
         STRUCTURE.metadata.edge_node_mapping[new_link.node_1].push(new_link.link_name);
         STRUCTURE.metadata.edge_node_mapping[new_link.node_2].push(new_link.link_name);
-        return new_link;
     }
 
     async delete_vm(VMS) {
@@ -590,6 +616,31 @@ class ManagerFlow {
         })
         const result = await response.json();
         return result;
+    }
+
+    async fetch_draft_slices() {
+        const urlDraftSlices = this.BASE_URL + this.#ENDPOINT_DRAFT_SLICE;
+        const response = await fetch(urlDraftSlices, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        })
+        const result = await response.json();
+        for (let slice of result.slices) {
+            this.#options_create_slice[0].choices.unshift({ name: "Continuar con slice: " + slice.deployment.details.project_name })
+        }
+
+        let formated_draft_slices = result.slices.map((slice) => {
+            return {
+                name: slice.deployment.details.project_name,
+                topology: slice.deployment.details.topology,
+                platform: slice.deployment.platform,
+            }
+        })
+
+        console.table(formated_draft_slices);
     }
 }
 
