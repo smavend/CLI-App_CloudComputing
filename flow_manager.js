@@ -143,7 +143,7 @@ class ManagerFlow {
                 { name: "Editar máquina virtual", value: 3 },
                 { name: "Borrar máquina virtual", value: 4 },
                 { name: "Borrar enlace", value: 5 },
-                { name: "Guardar avance", value: 6 },
+                { name: "Guardar avance y salir", value: 6 },
                 { name: "Siguiente", value: 7 },
                 { name: "Cancelar", value: 0 },
             ],
@@ -329,6 +329,7 @@ class ManagerFlow {
     async create_slice() {
         let SLICE = {};
         let answer = await inquirer.prompt(this.#options_create_slice_start);
+        SLICE.manager = this.TOKEN;
         SLICE.deployment = {
             platform: answer.platform,
             details: {
@@ -354,19 +355,22 @@ class ManagerFlow {
     }
 
     async create_slice_from_scratch(SLICE) {
-        // SLICE.manager = "id";
         SLICE.deployment.details.topology = "custom";
-        const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
-        if (DEFINED_SLICE) {
+        while (true) {
+            const DEFINED_SLICE = await this.create_vms_and_links(SLICE)
+            if (DEFINED_SLICE) {
 
-            console.log(JSON.stringify(DEFINED_SLICE));
+                console.log(JSON.stringify(DEFINED_SLICE));
 
-            const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
-            if (answer.option === 1) {
-                await this.deploy_slice(DEFINED_SLICE);
+                const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
+                if (answer.option === 1) {
+                    await this.deploy_slice(DEFINED_SLICE);
+                    break;
+                }
+            } else {
+                console.log("La creación del slice ha sido cancelada");
+                break;
             }
-        } else {
-            console.log("Creación de slice cancelada");
         }
     }
 
@@ -439,10 +443,10 @@ class ManagerFlow {
             body: JSON.stringify(SLICE),
         });
         const result = await response.json();
-        console.log("URL: " + JSON.stringify(result));
+        console.log(`El slice ${SLICE.deployment.details.project_name} ha sido desplegado con éxito`);
     }
 
-    async create_vms_and_links(SLICE, vms_created, links_created, structure_created) {
+    async create_vms_and_links(SLICE, structure_created) {
         let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
         let allow_delete_or_edit_vm = false;
@@ -491,7 +495,7 @@ class ManagerFlow {
                         // LINKS = UPDATED_LINKS;
                     }
                     break;
-                case 6: // SAVE ADVANCE
+                case 6: // SAVE ADVANCE AND EXIT
                     if (!allow_save_structure) {
                         console.log("No hay cambios para guardar");
                         break;
@@ -500,7 +504,7 @@ class ManagerFlow {
                     if (response.message === "success") {
                         console.log("Avance guardado");
                     }
-                    break;
+                    return;
                 case 7: // NEXT
                     return SLICE;
                 case 0: // CANCEL
@@ -634,9 +638,10 @@ class ManagerFlow {
 
         let formated_draft_slices = result.slices.map((slice) => {
             return {
-                name: slice.deployment.details.project_name,
-                topology: slice.deployment.details.topology,
-                platform: slice.deployment.platform,
+                nombre: slice.deployment.details.project_name,
+                topología: slice.deployment.details.topology,
+                plataforma: slice.deployment.platform,
+                visualizar: slice.deployment.details.graph_url
             }
         })
 
