@@ -28,6 +28,12 @@ async function loginUser(username, password, url) {
 	return result
 }
 
+export async function handleSessionTimeout() {
+	console.clear()
+	console.log("Sesión expirada. Por favor, inicie sesión nuevamente.")
+	await login() // Reutiliza la función de login existente
+}
+
 // main app
 async function launch() {
 	let answers

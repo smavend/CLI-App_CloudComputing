@@ -1,5 +1,6 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
+import { handleSessionTimeout } from "./index.js"
 
 class ManagerFlow {
     constructor(TOKEN, BASE_URL) {
@@ -102,8 +103,8 @@ class ManagerFlow {
                 { name: "Malla" },
                 { name: "Árbol" },
                 { name: "Anillo" },
-                { name: "Bus" }
-            ]
+                { name: "Bus" },
+            ],
         },
         {
             type: "number",
@@ -128,7 +129,7 @@ class ManagerFlow {
                 { name: "Pequeño", value: "small" },
                 { name: "Mediano", value: "medium" },
                 { name: "Grande", value: "large" },
-            ]
+            ],
         },
     ]
 
@@ -174,7 +175,7 @@ class ManagerFlow {
                 { name: "Pequeño", value: "small" },
                 { name: "Mediano", value: "medium" },
                 { name: "Grande", value: "large" },
-            ]
+            ],
         },
         {
             type: "confirm",
@@ -229,8 +230,8 @@ class ManagerFlow {
             choices: [
                 { name: "Desplegar", value: 1 },
                 { name: "Regresar", value: 0 },
-            ]
-        }
+            ],
+        },
     ]
 
     #options_monitoring = [
@@ -247,25 +248,25 @@ class ManagerFlow {
     ]
 
     async monitor_resources() {
-        let answer = await inquirer.prompt(this.#options_monitoring);
-        const worker = answer.worker;
-        await this.display_worker_metrics(worker);
+        let answer = await inquirer.prompt(this.#options_monitoring)
+        const worker = answer.worker
+        await this.display_worker_metrics(worker)
     }
 
     async display_worker_metrics(worker) {
-        const urlWorkerMetrics = `${this.BASE_URL}/monitoreo/${worker}`;
+        const urlWorkerMetrics = `${this.BASE_URL}/monitoreo/${worker}`
         const response = await fetch(urlWorkerMetrics, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: this.TOKEN,
             },
-        });
-        const result = await response.json();
+        })
+        const result = await response.json()
         if (result.message === "success") {
-            console.table(result.data);
+            console.table(result.data)
         } else {
-            console.log(result.message);
+            console.log(result.message)
         }
     }
 
@@ -375,59 +376,64 @@ class ManagerFlow {
     }
 
     async create_slice_from_topology(SLICE) {
-        console.log("create_slice_from_topology");
-        const answer = await inquirer.prompt(this.#options_slice_topology);
+        console.log("create_slice_from_topology")
+        const answer = await inquirer.prompt(this.#options_slice_topology)
         if (!this.valid_topology(answer.topology, answer.nodes)) {
-            console.log("Topología inválida");
-            return;
+            console.log("Topología inválida")
+            return
         }
-        SLICE.deployment.details.topology = answer.topology;
-        const SLICE_WITH_TOPOLOGY = await this.create_topology(SLICE, answer.topology, answer.nodes);
-        const DEFINED_SLICE = await this.create_vms_and_links(SLICE_WITH_TOPOLOGY);
+        SLICE.deployment.details.topology = answer.topology
+        const SLICE_WITH_TOPOLOGY = await this.create_topology(SLICE, answer.topology, answer.nodes)
+        const DEFINED_SLICE = await this.create_vms_and_links(SLICE_WITH_TOPOLOGY)
     }
 
     valid_topology(topology, nodes) {
-        return true;
+        return true
     }
 
     async create_topology(SLICE, topology, nodes) {
         switch (topology) {
             case "Lineal":
-                return this.create_topology_lineal(SLICE, nodes);
+                return this.create_topology_lineal(SLICE, nodes)
             case "Malla":
-                return this.create_topology_malla(SLICE, nodes);
+                return this.create_topology_malla(SLICE, nodes)
             case "Árbol":
-                return this.create_topology_arbol(SLICE, nodes);
+                return this.create_topology_arbol(SLICE, nodes)
             case "Anillo":
-                return this.create_topology_anillo(SLICE, nodes);
+                return this.create_topology_anillo(SLICE, nodes)
             case "Bus":
-                return this.create_topology_bus(SLICE, nodes);
+                return this.create_topology_bus(SLICE, nodes)
         }
-        return SLICE;
+        return SLICE
     }
 
-    create_topology_lineal(SLICE, nodes) {
+    create_topology_lineal(SLICE, nodes) { }
 
-    }
+    create_topology_malla(SLICE, nodes) { }
 
-    create_topology_malla(SLICE, nodes) {
+    create_topology_arbol(SLICE, nodes) { }
 
-    }
+    create_topology_anillo(SLICE, nodes) { }
 
-    create_topology_arbol(SLICE, nodes) {
-
-    }
-
-    create_topology_anillo(SLICE, nodes) {
-
-    }
-
-    create_topology_bus(SLICE, nodes) {
-
-    }
+    create_topology_bus(SLICE, nodes) { }
 
     async create_slice_from_template(SLICE) {
-        console.log("create_slice_from_template");
+        console.log("create_slice_from_template")
+    }
+
+    async deploy_slice(SLICE) {
+        console.log("Desplegando slice...")
+        const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY
+        const response = await fetch(url_deploy, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+            body: JSON.stringify(SLICE),
+        })
+        const result = await response.json()
+        console.log("URL: " + JSON.stringify(result))
     }
 
     async deploy_slice(SLICE) {
@@ -449,10 +455,10 @@ class ManagerFlow {
     async create_vms_and_links(SLICE, structure_created) {
         let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
-        let allow_delete_or_edit_vm = false;
-        let allow_delete_links_available = false;
-        let allow_create_link = false;
-        let allow_save_structure = false;
+        let allow_delete_or_edit_vm = false
+        let allow_delete_links_available = false
+        let allow_create_link = false
+        let allow_save_structure = false
 
         let vms_number;
         let links_number;
