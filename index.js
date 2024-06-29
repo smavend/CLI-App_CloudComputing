@@ -28,29 +28,43 @@ async function loginUser(username, password, url) {
 	return result
 }
 
-export async function handleSessionTimeout() {
-	console.clear()
-	console.log("Sesión expirada. Por favor, inicie sesión nuevamente.")
-	await login() // Reutiliza la función de login existente
-}
-
 // main app
-async function launch() {
+export async function launch() {
 	let answers
-	do {
-		console.log(figlet.textSync("Slice Manager"))
-		console.log("¡Bienvenido a la app CLI del orquestador Cloud!")
-		answers = await inquirer.prompt(start_options)
-		switch (answers.option) {
-			case 1: // request login
-				await login()
-				break
-			case 2: // funcion para cambiar de contraseña con correo asociado
-				await update_pswd()
-				break
+	try {
+		do {
+			console.log(figlet.textSync("Slice Manager"))
+			console.log("¡Bienvenido a la app CLI del orquestador Cloud!")
+			answers = await inquirer.prompt(start_options)
+			switch (answers.option) {
+				case 1: // request login
+					await login()
+					break
+				case 2: // funcion para cambiar de contraseña con correo asociado
+					await update_pswd()
+					break
+			}
+		} while (answers.option !== 0)
+		console.log("Cerrando programa...")
+	} catch (error) {
+		if (error.message === "StopStartLoop") {
+			console.log(figlet.textSync("Slice Manager"))
+			await login()
+			do {
+				console.log(figlet.textSync("Slice Manager"))
+				console.log("¡Bienvenido a la app CLI del orquestador Cloud!")
+				answers = await inquirer.prompt(start_options)
+				switch (answers.option) {
+					case 1: // request login
+						await login()
+						break
+					case 2: // funcion para cambiar de contraseña con correo asociado
+						await update_pswd()
+						break
+				}
+			} while (answers.option !== 0)
 		}
-	} while (answers.option !== 0)
-	console.log("Cerrando programa...")
+	}
 }
 
 // validation of credentials
@@ -134,4 +148,4 @@ const login_options = [
 	},
 ]
 
-launch()
+launch(false)

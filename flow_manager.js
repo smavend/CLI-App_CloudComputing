@@ -1,6 +1,6 @@
 import inquirer from "inquirer"
 import figlet from "figlet"
-import { handleSessionTimeout } from "./index.js"
+import { createSpinner } from "nanospinner"
 
 class ManagerFlow {
     constructor(TOKEN, BASE_URL) {
@@ -26,6 +26,7 @@ class ManagerFlow {
                 { name: "Monitoreo de recursos", value: 5 },
                 { name: "Cambiar contraseña", value: 6 },
                 { name: "Ayuda", value: 7 },
+                { name: "Ver Logs", value: 8 },
                 { name: "Cerrar sesión", value: 0 },
             ],
         },
@@ -270,48 +271,102 @@ class ManagerFlow {
         }
     }
 
+    async displayLogs() {
+        const urlLogs = `${this.BASE_URL}/logs`
+        try {
+            const response = await fetch(urlLogs, {
+                method: "GET",
+            })
+            const result = await response.json()
+            if (result.message === "success") {
+                console.log("\x1b[36m%s\x1b[0m", "Últimos 25 registros del archivo:") // Color cyan para el título
+                const logs = result.data.split("\n").slice(-25) // Obtener solo las últimas 25 líneas
+
+                logs.forEach((line) => {
+                    if (line.trim() !== "") {
+                        // Buscar y cambiar color del texto entre corchetes [authModule] a verde
+                        const coloredLine = line.replace(/\[(.*?)\]/g, "\x1b[32m[$1]\x1b[0m")
+
+                        const parts = coloredLine.split(" - ")
+                        if (parts.length >= 2) {
+                            const dateTime = parts[0].trim()
+                            const message = parts.slice(1).join(" - ").trim()
+                            console.log("\x1b[35m%s\x1b[0m", dateTime, "\t", message) // Color magenta para fecha/hora
+                        } else {
+                            console.log(coloredLine) // Imprimir la línea completa si no se puede dividir
+                        }
+                    }
+                })
+            } else {
+                console.log("Archivo de registro no encontrado")
+            }
+        } catch (error) {
+            console.error("Error al obtener los registros:", error)
+        }
+    }
+
     async start() {
-        console.log(figlet.textSync("Manager"))
-        while (true) {
-            const answer = await inquirer.prompt(this.#options_manager)
-            switch (answer.option) {
-                case 1:
-                    await this.show_slices()
-                    break
-                case 2:
-                    await this.pre_create_slice()
-                    break
-                case 3:
-                    break
-                case 4:
-                    break
-                case 5:
-                    await this.monitor_resources();
-                    break;
-                case 6:
-                    break
-                case 7:
-                    break
-                case 0:
-                    this.TOKEN = null;
-                    console.clear()
-                    return
+        const spinner = createSpinner()
+        try {
+            console.log(figlet.textSync("Manager"))
+            while (true) {
+                const answer = await inquirer.prompt(this.#options_manager)
+                switch (answer.option) {
+                    case 1:
+                        await this.show_slices()
+                        break
+                    case 2:
+                        await this.create_slice()
+                        break
+                    case 3:
+                        break
+                    case 4:
+                        break
+                    case 5:
+                        await this.monitor_resources()
+                        break
+                    case 6:
+                        break
+                    case 7:
+                        break
+                    case 8:
+                        await this.displayLogs()
+                        break
+                    case 0:
+                        this.TOKEN = null
+                        console.clear()
+                        return
+                }
+            }
+        } catch (error) {
+            if (error.message === "StopStartLoop") {
+                this.TOKEN = null
+                console.clear()
+                spinner.warn({ text: "Sesión expirada. Por favor, inicie sesión nuevamente." })
+                throw error
             }
         }
     }
 
     async show_slices() {
-        const response = await this.fetch_slices();
-        const slices = response.slices;
-        console.log(`Se encontraron ${slices.length} slices`);
-        console.table(slices);
+        try {
+            const response = await this.fetch_slices()
+
+            const slices = response.slices
+            console.log(`Se encontraron ${slices.length} slices`)
+            console.table(slices)
+        } catch (error) {
+            if (error.message === "StopStartLoop") {
+                throw error
+            }
+        }
+
         // let answer
         // do {
         // 	answer = await inquirer.prompt(this.#show_slices_options)
         // 	console.log(answer)
         // } while (answer.res != 2)
     }
-
 
     async pre_create_slice() {
         await this.fetch_draft_slices();
@@ -624,6 +679,11 @@ class ManagerFlow {
                 Authorization: this.TOKEN,
             },
         })
+
+        if (response.status === 411) {
+            console.clear()
+            throw new Error("StopStartLoop")
+        }
         const result = await response.json();
         return result;
     }
@@ -653,6 +713,7 @@ class ManagerFlow {
 
         console.table(formated_draft_slices);
     }
+
 }
 
 export default ManagerFlow
