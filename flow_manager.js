@@ -32,17 +32,6 @@ class ManagerFlow {
         },
     ]
 
-    #show_slices_options = [
-        {
-            type: "list",
-            name: "res",
-            message: "Selecciona una opción:",
-            choices: [
-                { name: "Ver detalles de slice", value: 1 },
-                { name: "Regresar", value: 2 },
-            ],
-        },
-    ]
 
     #options_create_slice = [
         {
@@ -50,6 +39,20 @@ class ManagerFlow {
             name: "option",
             message: "Seleccione continuar con su slice o crear uno nuevo: ",
             choices: []
+        }
+    ]
+
+    #delete_slice_options = [
+        {
+            type: "list",
+            name: "slice",
+            message: "Seleccione el slice a borrar: ",
+            choices: []
+        },
+        {
+            type: "confirm",
+            name: "confirmation",
+            message: "¿Está seguro que desea borrar el slice seleccionado?",
         }
     ]
 
@@ -328,6 +331,7 @@ class ManagerFlow {
                     case 3:
                         break
                     case 4:
+                        await this.delete_slice()
                         break
                     case 5:
                         await this.monitor_resources()
@@ -358,6 +362,17 @@ class ManagerFlow {
         }
     }
 
+    async delete_slice() {
+        await this.set_delete_slice_options();
+        let answer = await inquirer.prompt(this.#delete_slice_options);
+        if (answer.confirmation !== true) {
+            console.log("Borrado de slice cancelado");
+            return;
+        }
+        console.log('borrando (no implementado)');
+        //this.delete_slice_by_id(answer.slice);
+    }
+
     async show_slices() {
         try {
             const response = await this.fetch_slices()
@@ -380,12 +395,12 @@ class ManagerFlow {
         let answer = await inquirer.prompt(this.#options_create_slice);
         switch (answer.option) {
             case 0: // CREATE NEW SLICE
-                await this.create_slice(); // TODO: ADD FUNCTION TO COMPLETE OR EMPTY VMS OPTIONS
+                await this.create_slice(); // TODO: CHECK FUNCTION TO COMPLETE OR CLEAR VMS DELETE OPTIONS
                 break;
             case -1: // BACK
                 break;
             default: // CONTINUE CREATE SLICE
-                this.create_slice_from_draft(answer.option); // TODO: ADD FUNCTION TO COMPLETE OR EMPTY VMS OPTIONS
+                this.create_slice_from_draft(answer.option); // TODO: CHECK FUNCTION TO COMPLETE OR CLEAR VMS DELETE OPTIONS
                 break;
         }
     }
@@ -791,6 +806,27 @@ class ManagerFlow {
         for (let link in SLICE.structure.visjs.edges) {
             this.#options_delete_link[0].choices.unshift({ name: link.label, value: link.label });
         }
+    }
+
+    async set_delete_slice_options() {
+        const response = await this.fetch_slices();
+        this.#delete_slice_options[0].choices = [];
+        for (let slice of response.slices) {
+            this.#delete_slice_options[0].choices.push({ name: slice.name, value: slice._id });
+        }
+    }
+
+    async delete_slice_by_id(slice_id) {
+        const urlDeleteSlice = this.BASE_URL + this.#ENDPOINT_DEPLOY + "/" + slice_id;
+        const response = await fetch(urlDeleteSlice, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        });
+        const result = await response.json();
+        console.log(result.message);
     }
 
 }
