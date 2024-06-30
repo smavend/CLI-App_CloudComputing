@@ -369,6 +369,9 @@ class ManagerFlow {
             if (error.message === "StopStartLoop") {
                 throw error
             }
+            else {
+                console.error(error);
+            }
         }
     }
 
@@ -377,24 +380,30 @@ class ManagerFlow {
         let answer = await inquirer.prompt(this.#options_create_slice);
         switch (answer.option) {
             case 0: // CREATE NEW SLICE
-                await this.create_slice();
+                await this.create_slice(); // TODO: ADD FUNCTION TO COMPLETE OR EMPTY VMS OPTIONS
                 break;
             case -1: // BACK
                 break;
             default: // CONTINUE CREATE SLICE
-                let SLICE = await this.fetch_draft_slice(answer.option);
-                let creation_response = await this.create_slice_from_scratch(SLICE);
-                if (creation_response) {
-                    let DEFINED_SLICE = creation_response;
-                    console.log(JSON.stringify(DEFINED_SLICE));
-                    console.log("Desplegar slice...");
-                    // await this.deploy_slice(DEFINED_SLICE);
-                }
+                this.create_slice_from_draft(answer.option); // TODO: ADD FUNCTION TO COMPLETE OR EMPTY VMS OPTIONS
                 break;
         }
     }
 
+    async create_slice_from_draft(slice_option) {
+        let SLICE = await this.fetch_draft_slice(slice_option);
+        this.set_vms_and_links_delete_options(SLICE);
+        let creation_response = await this.create_slice_from_scratch(SLICE);
+        if (creation_response) {
+            let DEFINED_SLICE = creation_response;
+            console.log(JSON.stringify(DEFINED_SLICE));
+            console.log("Desplegar slice...");
+            // await this.deploy_slice(DEFINED_SLICE);
+        }
+    }
+
     async create_slice() {
+        this.clear_vms_and_links_delete_options();
         let SLICE = {};
         let answer = await inquirer.prompt(this.#options_create_slice_start);
         SLICE.deployment = {
@@ -431,7 +440,6 @@ class ManagerFlow {
     }
 
     async create_slice_from_scratch(SLICE) {
-        console.log(SLICE);
         SLICE.deployment.details.topology = "custom";
         while (true) {
             const response = await this.create_vms_and_links(SLICE);
@@ -547,14 +555,14 @@ class ManagerFlow {
                     if (!allow_delete_or_edit_vm) {
                         break;
                     }
-                    await this.delete_vm(VMS);
+                    await this.delete_vm(STRUCTURE);
                     break;
                 case 5: // DELETE LINK
                     if (!allow_delete_links_available) {
                         console.log("Primero debe agregar un enlace");
                         break;
                     }
-                    await this.delete_link(LINKS)
+                    await this.delete_link(STRUCTURE);
                     break;
                 case 6: // ASSIGN USER
                     await this.assign_user(SLICE);
@@ -712,14 +720,15 @@ class ManagerFlow {
         const result = await response.json();
         if (result.slices.length === 0) return;
 
-        this.#options_create_slice[0].choices = [];
+        this.#options_create_slice[0].choices = [
+            { name: "Crear slice nuevo", value: 0 },
+            { name: "Regresar", value: -1 }
+        ];
         for (let slice of result.slices) {
-            this.#options_create_slice[0].choices.push(
+            this.#options_create_slice[0].choices.unshift(
                 { name: "Continuar con slice: " + slice.deployment.details.project_name, value: slice._id }
             )
         }
-        this.#options_create_slice[0].choices.push({ name: "Crear slice nuevo", value: 0 });
-        this.#options_create_slice[0].choices.push({ name: "Regresar", value: -1 });
 
         let formated_draft_slices = result.slices.map((slice) => {
             return {
@@ -762,6 +771,26 @@ class ManagerFlow {
         });
         const result = await response.json();
         return result.slice;
+    }
+
+    clear_vms_and_links_delete_options() {
+        this.#options_delete_vm[0].choices = [{ name: "Cancelar", value: 0 }];
+        this.#options_delete_link[0].choices = [{ name: "Cancelar", value: 0 }];
+    }
+
+    set_vms_and_links_delete_options(SLICE) {
+        this.#options_delete_vm[0].choices = [{ name: "Cancelar", value: 0 }];
+        this.#options_delete_link[0].choices = [{ name: "Cancelar", value: 0 }];
+
+        for (let vm in SLICE.structure.visjs.nodes) {
+            this.#options_delete_vm[0].choices.unshift({ name: vm.label, value: vm.label });
+            this.#options_create_link[1].choices.unshift({ name: vm.label, value: vm.label });
+            this.#options_create_link[2].choices.unshift({ name: vm.label, value: vm.label });
+        }
+
+        for (let link in SLICE.structure.visjs.edges) {
+            this.#options_delete_link[0].choices.unshift({ name: link.label, value: link.label });
+        }
     }
 
 }
