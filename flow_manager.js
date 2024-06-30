@@ -49,10 +49,7 @@ class ManagerFlow {
             type: "list",
             name: "option",
             message: "Seleccione continuar con su slice o crear uno nuevo: ",
-            choices: [
-                { name: "Crear slice nuevo", value: 0 },
-                { name: "Regresar", value: -1 }
-            ]
+            choices: []
         }
     ]
 
@@ -434,6 +431,7 @@ class ManagerFlow {
     }
 
     async create_slice_from_scratch(SLICE) {
+        console.log(SLICE);
         SLICE.deployment.details.topology = "custom";
         while (true) {
             const response = await this.create_vms_and_links(SLICE);
@@ -713,16 +711,21 @@ class ManagerFlow {
         })
         const result = await response.json();
         if (result.slices.length === 0) return;
+
+        this.#options_create_slice[0].choices = [];
         for (let slice of result.slices) {
-            this.#options_create_slice[0].choices.unshift(
+            this.#options_create_slice[0].choices.push(
                 { name: "Continuar con slice: " + slice.deployment.details.project_name, value: slice._id }
             )
         }
+        this.#options_create_slice[0].choices.push({ name: "Crear slice nuevo", value: 0 });
+        this.#options_create_slice[0].choices.push({ name: "Regresar", value: -1 });
 
         let formated_draft_slices = result.slices.map((slice) => {
             return {
                 nombre: slice.deployment.details.project_name,
                 topología: slice.deployment.details.topology,
+                vms: Object.keys(slice.structure.visjs.nodes).length,
                 plataforma: slice.deployment.platform,
                 visualizar: slice.deployment.details.graph_url
             }
@@ -741,8 +744,10 @@ class ManagerFlow {
             },
         });
         const result = await response.json();
+
+        this.#options_assign_user[0].choices = [];
         for (let user of result.users) {
-            this.#options_assign_user[0].choices.unshift({ name: user.username, value: user.id });
+            this.#options_assign_user[0].choices.push({ name: user.username, value: user.id });
         }
     }
 
@@ -756,7 +761,7 @@ class ManagerFlow {
             },
         });
         const result = await response.json();
-        return result;
+        return result.slice;
     }
 
 }
