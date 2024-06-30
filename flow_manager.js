@@ -239,8 +239,8 @@ class ManagerFlow {
             name: "option",
             message: "Seleccione una opción:",
             choices: [
-                { name: "Desplegar", value: 1 },
-                { name: "Regresar", value: 0 },
+                { name: "Desplegar" },
+                { name: "Regresar" },
             ],
         },
     ]
@@ -416,30 +416,32 @@ class ManagerFlow {
                 break;
         }
 
+        if (creation_response) {
+            let DEFINED_SLICE = creation_response;
+            console.log(JSON.stringify(DEFINED_SLICE));
+            console.log("Desplegar slice...");
+            // await this.deploy_slice(DEFINED_SLICE);
+        }
+
     }
 
     async create_slice_from_scratch(SLICE) {
         SLICE.deployment.details.topology = "custom";
         while (true) {
-            const response_creation = await this.create_vms_and_links(SLICE);
-            console.log("response_creation: ", response_creation);
-            if (response_creation === 0) {
-                console.log("Saliendo de la creación de slice");
-                break;
-            }
-            if (!response_creation) {
-                console.log("La creación del slice ha sido cancelada");
-                break;
-            }
+            const response = await this.create_vms_and_links(SLICE);
+            console.log("response_creation: ", response);
 
-            let DEFINED_SLICE = response_creation;
-            console.log(JSON.stringify(DEFINED_SLICE));
+            if (response === "guardar" || response === "cancelar") {
+                console.log("Saliendo de la creación de slice");
+                return;
+            }
 
             const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
-            if (answer.option === 1) {
-                await this.deploy_slice(DEFINED_SLICE);
-                break;
+            if (answer.option === "Regresar") {
+                continue;
             }
+
+            return response;
         }
     }
 
@@ -560,11 +562,11 @@ class ManagerFlow {
                     if (response.message === "success") {
                         console.log("Avance guardado correctamente");
                     }
-                    return 0;
+                    return "guardar";
                 case 8: // NEXT
                     return SLICE;
                 case 0: // CANCEL
-                    return;
+                    return "cancelar";
             }
 
             // UPDATING SLICE OBJECT
@@ -597,8 +599,6 @@ class ManagerFlow {
                 allow_save_structure = false
             }
 
-            // console.log(`vms: ${JSON.stringify(VMS)}`);
-            // console.log(`links: ${JSON.stringify(LINKS)}`);
             console.log(`structure: ${JSON.stringify(STRUCTURE)}`);
         }
     }
