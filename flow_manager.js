@@ -376,7 +376,7 @@ class ManagerFlow {
     }
 
     async pre_create_slice() {
-        await this.fetch_draft_slices();
+        await this.set_draft_slices();
         let answer = await inquirer.prompt(this.#options_create_slice);
         switch (answer.option) {
             case 0: // CREATE NEW SLICE
@@ -385,6 +385,14 @@ class ManagerFlow {
             case -1: // BACK
                 break;
             default: // CONTINUE CREATE SLICE
+                let SLICE = await this.fetch_draft_slice(answer.option);
+                let creation_response = await this.create_slice_from_scratch(SLICE);
+                if (creation_response) {
+                    let DEFINED_SLICE = creation_response;
+                    console.log(JSON.stringify(DEFINED_SLICE));
+                    console.log("Desplegar slice...");
+                    // await this.deploy_slice(DEFINED_SLICE);
+                }
                 break;
         }
     }
@@ -694,7 +702,7 @@ class ManagerFlow {
         return result;
     }
 
-    async fetch_draft_slices() {
+    async set_draft_slices() {
         const urlDraftSlices = this.BASE_URL + this.#ENDPOINT_DRAFT_SLICE;
         const response = await fetch(urlDraftSlices, {
             method: "GET",
@@ -706,7 +714,9 @@ class ManagerFlow {
         const result = await response.json();
         if (result.slices.length === 0) return;
         for (let slice of result.slices) {
-            this.#options_create_slice[0].choices.unshift({ name: "Continuar con slice: " + slice.deployment.details.project_name })
+            this.#options_create_slice[0].choices.unshift(
+                { name: "Continuar con slice: " + slice.deployment.details.project_name, value: slice._id }
+            )
         }
 
         let formated_draft_slices = result.slices.map((slice) => {
@@ -734,6 +744,19 @@ class ManagerFlow {
         for (let user of result.users) {
             this.#options_assign_user[0].choices.unshift({ name: user.username, value: user.id });
         }
+    }
+
+    async fetch_draft_slice(slice_id) {
+        const urlDraftSlice = this.BASE_URL + this.#ENDPOINT_DRAFT_SLICE + "/" + slice_id;
+        const response = await fetch(urlDraftSlice, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        });
+        const result = await response.json();
+        return result;
     }
 
 }
