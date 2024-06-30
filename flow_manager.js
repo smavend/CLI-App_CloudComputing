@@ -458,7 +458,6 @@ class ManagerFlow {
         SLICE.deployment.details.topology = "custom";
         while (true) {
             const response = await this.create_vms_and_links(SLICE);
-            console.log("response_creation: ", response);
 
             if (response === "guardar" || response === "cancelar") {
                 console.log("Saliendo de la creación de slice");
