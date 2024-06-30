@@ -634,7 +634,7 @@ class ManagerFlow {
     async assign_user(SLICE) {
         await this.set_assignable_users();
         const answer = await inquirer.prompt(this.#options_assign_user);
-        SLICE.user = answer.user;
+        SLICE.client = answer.user;
     }
 
     async save_advance(SLICE) {
@@ -770,7 +770,7 @@ class ManagerFlow {
 
         this.#options_assign_user[0].choices = [];
         for (let user of result.users) {
-            this.#options_assign_user[0].choices.push({ name: user.username, value: user.id });
+            this.#options_assign_user[0].choices.push({ name: user.username, value: user._id });
         }
     }
 
