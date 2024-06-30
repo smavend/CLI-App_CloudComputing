@@ -11,6 +11,7 @@ class ManagerFlow {
     #ENDPOINT_LIST_SLICES = "/slices";
     #ENDPOINT_DEPLOY = "/slices";
     #ENDPOINT_DRAFT_SLICE = "/slices/draft";
+    #ENDPOINT_LIST_REGULAR_USERS = "/users/client";
 
     #options_manager = [
         {
@@ -144,11 +145,21 @@ class ManagerFlow {
                 { name: "Editar máquina virtual", value: 3 },
                 { name: "Borrar máquina virtual", value: 4 },
                 { name: "Borrar enlace", value: 5 },
-                { name: "Guardar avance y salir", value: 6 },
-                { name: "Siguiente", value: 7 },
+                { name: "Asignar usuario", value: 6 },
+                { name: "Guardar avance y salir", value: 7 },
+                { name: "Siguiente", value: 8 },
                 { name: "Cancelar", value: 0 },
             ],
         },
+    ]
+
+    #options_assign_user = [
+        {
+            type: "list",
+            name: "user",
+            message: "Seleccione un usuario para asignar:",
+            choices: []
+        }
     ]
 
     #options_create_vm = [
@@ -159,7 +170,7 @@ class ManagerFlow {
         },
         {
             type: "list",
-            name: "vm_os",
+            name: "vm_image",
             message: "Seleccione el sistema operativo de la máquina virtual: ",
             choices: [
                 { name: "Windows", value: "windows" },
@@ -344,6 +355,9 @@ class ManagerFlow {
                 spinner.warn({ text: "Sesión expirada. Por favor, inicie sesión nuevamente." })
                 throw error
             }
+            else {
+                console.error(error);
+            }
         }
     }
 
@@ -359,12 +373,6 @@ class ManagerFlow {
                 throw error
             }
         }
-
-        // let answer
-        // do {
-        // 	answer = await inquirer.prompt(this.#show_slices_options)
-        // 	console.log(answer)
-        // } while (answer.res != 2)
     }
 
     async pre_create_slice() {
@@ -384,7 +392,6 @@ class ManagerFlow {
     async create_slice() {
         let SLICE = {};
         let answer = await inquirer.prompt(this.#options_create_slice_start);
-        SLICE.manager = this.TOKEN;
         SLICE.deployment = {
             platform: answer.platform,
             details: {
@@ -394,25 +401,28 @@ class ManagerFlow {
                 cidr: "",
                 zone: answer.zone
             }
-        }
+        };
 
+        let creation_response;
         switch (answer.method) {
             case "from_scratch":
-                answer = await this.create_slice_from_scratch(SLICE)
-                break
+                creation_response = await this.create_slice_from_scratch(SLICE);
+                break;
             case "from_topology":
-                answer = await this.create_slice_from_topology(SLICE)
-                break
+                creation_response = await this.create_slice_from_topology(SLICE);
+                break;
             case "from_template":
-                answer = await this.create_slice_from_template(SLICE)
-                break
+                creation_response = await this.create_slice_from_template(SLICE);
+                break;
         }
+
     }
 
     async create_slice_from_scratch(SLICE) {
         SLICE.deployment.details.topology = "custom";
         while (true) {
-            const response_creation = await this.create_vms_and_links(SLICE)
+            const response_creation = await this.create_vms_and_links(SLICE);
+            console.log("response_creation: ", response_creation);
             if (response_creation === 0) {
                 console.log("Saliendo de la creación de slice");
                 break;
@@ -422,7 +432,7 @@ class ManagerFlow {
                 break;
             }
 
-            DEFINED_SLICE = response_creation;
+            let DEFINED_SLICE = response_creation;
             console.log(JSON.stringify(DEFINED_SLICE));
 
             const answer = await inquirer.prompt(this.#options_pre_deploy_slice);
@@ -480,21 +490,6 @@ class ManagerFlow {
     }
 
     async deploy_slice(SLICE) {
-        console.log("Desplegando slice...")
-        const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY
-        const response = await fetch(url_deploy, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: this.TOKEN,
-            },
-            body: JSON.stringify(SLICE),
-        })
-        const result = await response.json()
-        console.log("URL: " + JSON.stringify(result))
-    }
-
-    async deploy_slice(SLICE) {
         console.log("Desplegando slice...");
 
         const url_deploy = this.BASE_URL + this.#ENDPOINT_DEPLOY;
@@ -544,22 +539,19 @@ class ManagerFlow {
                     if (!allow_delete_or_edit_vm) {
                         break;
                     }
-                    const UPDATED_VMS = await this.delete_vm(VMS);
-                    if (UPDATED_VMS) {
-                        // VMS = UPDATED_VMS;
-                    }
+                    await this.delete_vm(VMS);
                     break;
                 case 5: // DELETE LINK
                     if (!allow_delete_links_available) {
                         console.log("Primero debe agregar un enlace");
                         break;
                     }
-                    const UPDATED_LINKS = await this.delete_link(LINKS)
-                    if (UPDATED_LINKS) {
-                        // LINKS = UPDATED_LINKS;
-                    }
+                    await this.delete_link(LINKS)
                     break;
-                case 6: // SAVE ADVANCE AND EXIT
+                case 6: // ASSIGN USER
+                    await this.assign_user(SLICE);
+                    break;
+                case 7: // SAVE ADVANCE AND EXIT
                     if (!allow_save_structure) {
                         console.log("No hay cambios para guardar");
                         break;
@@ -569,7 +561,7 @@ class ManagerFlow {
                         console.log("Avance guardado correctamente");
                     }
                     return 0;
-                case 7: // NEXT
+                case 8: // NEXT
                     return SLICE;
                 case 0: // CANCEL
                     return;
@@ -611,6 +603,12 @@ class ManagerFlow {
         }
     }
 
+    async assign_user(SLICE) {
+        await this.set_assignable_users();
+        const answer = await inquirer.prompt(this.#options_assign_user);
+        SLICE.user = answer.user;
+    }
+
     async save_advance(SLICE) {
         console.log("Guardando avance...");
         SLICE.deployment.details.status = "not_deployed";
@@ -642,7 +640,12 @@ class ManagerFlow {
             value: new_vm.vm_name,
         });
         // UPDATE SLICE STRUCTURE
-        STRUCTURE.visjs.nodes[new_vm.vm_name] = { label: new_vm.vm_name, figure: "server" };
+        STRUCTURE.visjs.nodes[new_vm.vm_name] = {
+            label: new_vm.vm_name,
+            image: new_vm.vm_image,
+            flavor: new_vm.flavor,
+            figure: "server",
+        };
         STRUCTURE.metadata.edge_node_mapping[new_vm.vm_name] = [];
     }
 
@@ -716,6 +719,21 @@ class ManagerFlow {
         })
 
         console.table(formated_draft_slices);
+    }
+
+    async set_assignable_users() {
+        const urlUsers = this.BASE_URL + this.#ENDPOINT_LIST_REGULAR_USERS;
+        const response = await fetch(urlUsers, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: this.TOKEN,
+            },
+        });
+        const result = await response.json();
+        for (let user of result.users) {
+            this.#options_assign_user[0].choices.unshift({ name: user.username, value: user.id });
+        }
     }
 
 }
