@@ -30,3 +30,5 @@ Finalmente, cuando se obtenga un _setup_ exitoso, se debe ejecutar el siguiente 
 ```bash {"id":"01HWB4H0QJW56YEFS5WE4GSP7X"}
 node index.js
 ```
+A partir de dicha ejecución, se puede navegar mediante el servicio siguiendo las opciones ofrecidas en el menú de la consola.
+![image](https://github.com/smavend/CLI-App_CloudComputing/assets/105998272/8e6cd7bd-fae8-4f17-99a5-75022f2a42ac)
