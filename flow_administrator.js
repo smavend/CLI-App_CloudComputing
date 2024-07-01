@@ -1,6 +1,5 @@
 import inquirer from "inquirer";
 import figlet from "figlet";
-import fetch from "node-fetch";
 import crypto from "crypto"; // Importa el módulo crypto para hashing
 
 class AdministratorFlow {
@@ -111,7 +110,6 @@ class AdministratorFlow {
         }
 
         const data = await response.json();
-        console.log("Usuario creado exitosamente:", data);
         return data;
     }
 
