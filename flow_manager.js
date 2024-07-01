@@ -87,7 +87,7 @@ class ManagerFlow {
             name: "platform",
             message: "Seleccione la plataforma para el slice: ",
             choices: [
-                { name: "Linux", value: "Linux" },
+                // { name: "Linux", value: "Linux" },
                 { name: "OpenStack", value: "OpenStack" },
             ],
         },
@@ -98,23 +98,12 @@ class ManagerFlow {
         },
         {
             type: "list",
-            name: "zone",
-            message: "Seleccione una zona de disponibilidad:",
-            choices: [
-                { name: "Zona 1", value: 1 },
-                { name: "Zona 2", value: 2 },
-                { name: "Zona 3", value: 3 },
-                { name: "Automático", value: 0 },
-            ],
-        },
-        {
-            type: "list",
             name: "method",
             message: "Seleccione el medio para crear el slice:",
             choices: [
                 { name: "Crear desde cero", value: "from_scratch" },
-                { name: "Crear desde topología", value: "from_topology" },
-                { name: "Crear desde plantilla", value: "from_template" },
+                // { name: "Crear desde topología", value: "from_topology" },
+                // { name: "Crear desde plantilla", value: "from_template" },
             ],
         },
     ]
