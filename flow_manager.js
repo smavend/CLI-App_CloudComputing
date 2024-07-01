@@ -183,9 +183,9 @@ class ManagerFlow {
             name: "flavor",
             message: "Selecciones un flavor para la máquina virtual:",
             choices: [
-                { name: "Pequeño", value: "small" },
-                { name: "Mediano", value: "medium" },
-                { name: "Grande", value: "large" },
+                { name: "RAM: 512MB CPUs: 1 Almacenamiento: 4GB", value: "49d3bebb-3c5e-4ba1-9c0f-602baef8a87c" },
+                { name: "RAM: 512MB CPUs: 1 Almacenamiento: 2GB", value: "ba4e4644-3ec6-4a33-931f-167ba417dd86" },
+                { name: "RAM: 512MB CPUs: 1 Almacenamiento: 1GB", value: "dcc48e11-d96e-48aa-b66e-0ead93602f9c" },
             ],
         },
         {
@@ -400,7 +400,7 @@ class ManagerFlow {
             case -1: // BACK
                 break;
             default: // CONTINUE CREATE SLICE
-                this.create_slice_from_draft(answer.option); // TODO: CHECK FUNCTION TO COMPLETE OR CLEAR VMS DELETE OPTIONS
+                await this.create_slice_from_draft(answer.option); // TODO: CHECK FUNCTION TO COMPLETE OR CLEAR VMS DELETE OPTIONS
                 break;
         }
     }
@@ -408,7 +408,7 @@ class ManagerFlow {
     async create_slice_from_draft(slice_option) {
         let SLICE = await this.fetch_draft_slice(slice_option);
         this.set_vms_and_links_delete_options(SLICE);
-        let creation_response = await this.create_slice_from_scratch(SLICE);
+        let creation_response = await this.create_slice_from_scratch(SLICE, SLICE.structure);
         if (creation_response) {
             let DEFINED_SLICE = creation_response;
             console.log(JSON.stringify(DEFINED_SLICE));
@@ -454,10 +454,10 @@ class ManagerFlow {
 
     }
 
-    async create_slice_from_scratch(SLICE) {
-        SLICE.deployment.details.topology = "custom";
+    async create_slice_from_scratch(SLICE, structure_created) {
+        SLICE.deployment.details.topology = "Personalizada";
         while (true) {
-            const response = await this.create_vms_and_links(SLICE);
+            const response = await this.create_vms_and_links(SLICE, structure_created);
 
             if (response === "guardar" || response === "cancelar") {
                 console.log("Saliendo de la creación de slice");
@@ -538,10 +538,10 @@ class ManagerFlow {
     async create_vms_and_links(SLICE, structure_created) {
         let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
 
-        let allow_delete_or_edit_vm = false
-        let allow_delete_links_available = false
-        let allow_create_link = false
-        let allow_save_structure = false
+        let allow_delete_or_edit_vm = Object.keys(STRUCTURE.visjs.nodes).length > 0
+        let allow_delete_links_available = Object.keys(STRUCTURE.visjs.edges).length > 0
+        let allow_create_link = Object.keys(STRUCTURE.visjs.nodes).length > 1
+        let allow_save_structure = Object.keys(STRUCTURE.visjs.nodes).length > 0
 
         let vms_number;
         let links_number;
@@ -690,18 +690,23 @@ class ManagerFlow {
         STRUCTURE.metadata.edge_node_mapping[new_link.node_2].push(new_link.link_name);
     }
 
-    async delete_vm(VMS) {
+    async delete_vm(STRUCTURE) {
         const answer = await inquirer.prompt(this.#options_delete_vm);
         if (answer.vm_name === 0) return; // DELETE CANCELED
-        const UPDATED_VMS = VMS.filter((vm) => vm.vm_name != answer.vm_name);
-        return UPDATED_VMS;
+        STRUCTURE.visjs.nodes = Object.fromEntries(
+            Object.entries(STRUCTURE.visjs.nodes).filter(([key, value]) => key != answer.vm_name)
+        );
+        STRUCTURE.visjs.metadata.edge_node_mapping = Object.fromEntries(
+            Object.entries(STRUCTURE.visjs.metadata.edge_node_mapping).filter(([key, value]) => key != answer.vm_name)
+        );
     }
 
-    async delete_link(LINKS) {
+    async delete_link(STRUCTURE) {
         const answer = await inquirer.prompt(this.#options_delete_link);
         if (answer.link_name === 0) return; // DELETE CANCELED
-        const UPDATED_LINKS = LINKS.filter((link) => link.link_name != answer.link_name);
-        return UPDATED_LINKS;
+        STRUCTURE.visjs.edges = Object.fromEntries(
+            Object.entries(STRUCTURE.visjs.edges).filter(([key, value]) => key != answer.link_name)
+        );
     }
 
     async fetch_slices() {
@@ -796,14 +801,14 @@ class ManagerFlow {
         this.#options_delete_vm[0].choices = [{ name: "Cancelar", value: 0 }];
         this.#options_delete_link[0].choices = [{ name: "Cancelar", value: 0 }];
 
-        for (let vm in SLICE.structure.visjs.nodes) {
-            this.#options_delete_vm[0].choices.unshift({ name: vm.label, value: vm.label });
-            this.#options_create_link[1].choices.unshift({ name: vm.label, value: vm.label });
-            this.#options_create_link[2].choices.unshift({ name: vm.label, value: vm.label });
+        for (let vm of Object.keys(SLICE.structure.visjs.nodes)) {
+            this.#options_delete_vm[0].choices.unshift({ name: vm, value: vm });
+            this.#options_create_link[1].choices.unshift({ name: vm, value: vm });
+            this.#options_create_link[2].choices.unshift({ name: vm, value: vm });
         }
 
-        for (let link in SLICE.structure.visjs.edges) {
-            this.#options_delete_link[0].choices.unshift({ name: link.label, value: link.label });
+        for (let link of Object.keys(SLICE.structure.visjs.edges)) {
+            this.#options_delete_link[0].choices.unshift({ name: link, value: link });
         }
     }
 
