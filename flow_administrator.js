@@ -17,7 +17,7 @@ class AdministratorFlow {
             choices: [
                 { name: "Listar usuarios", value: 1 },
                 { name: "Crear nuevo usuario", value: 2 },
-                { name: "Editar permisos de usuario", value: 3 },
+                // { name: "Editar permisos de usuario", value: 3 },
                 { name: "Cerrar sesión", value: 4 },
             ],
         },

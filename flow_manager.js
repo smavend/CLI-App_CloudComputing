@@ -50,7 +50,7 @@ class ManagerFlow {
                 { name: "Crear slice", value: 2 },
                 { name: "Borrar slices", value: 4 },
                 { name: "Monitoreo de recursos", value: 5 },
-                { name: "Cambiar contraseña", value: 6 },
+                // { name: "Cambiar contraseña", value: 6 },
                 { name: "Ayuda", value: 7 },
                 { name: "Ver Logs", value: 8 },
                 { name: "Cerrar sesión", value: 0 },

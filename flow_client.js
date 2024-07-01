@@ -14,7 +14,7 @@ class ClientFlow {
             message: "Seleccione una opción: ",
             choices: [
                 { name: "Ver slices", value: 1 },
-                { name: "Cambiar contraseña", value: 2 },
+                // { name: "Cambiar contraseña", value: 2 },
                 { name: "Ayuda", value: 3 },
                 { name: "Cerrar sesión", value: 4 },
             ],
