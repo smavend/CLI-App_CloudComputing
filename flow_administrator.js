@@ -90,7 +90,7 @@ class AdministratorFlow {
 
         const new_user = {
             username: userData.usuario,
-            passwordHash: hashedPassword, // Utiliza una variable diferente para el hash de la contraseña
+            password: hashedPassword, // Utiliza una variable diferente para el hash de la contraseña
             role: userData.rol,
         };
 

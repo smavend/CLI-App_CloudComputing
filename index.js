@@ -94,7 +94,7 @@ async function login() {
                 flow = new ManagerFlow(TOKEN, BASE_URL)
                 await flow.start()
                 break
-            case "client":
+            case "regular":
                 flow = new ClientFlow(TOKEN, BASE_URL)
                 await flow.start()
                 break
