@@ -9,6 +9,7 @@ import AdministratorFlow from "./flow_administrator.js"
 import ManagerFlow from "./flow_manager.js"
 import ClientFlow from "./flow_client.js"
 
+
 let TOKEN
 
 const IP = "10.20.12.148"
