@@ -11,7 +11,7 @@ import ClientFlow from "./flow_client.js"
 
 let TOKEN
 
-const IP = "10.20.12.148"
+const IP = "10.20.12.153"
 const PORT = "8080"
 let BASE_URL = `http://${IP}:${PORT}`
 
