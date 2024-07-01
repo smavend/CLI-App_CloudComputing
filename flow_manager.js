@@ -695,8 +695,11 @@ class ManagerFlow {
         STRUCTURE.visjs.nodes = Object.fromEntries(
             Object.entries(STRUCTURE.visjs.nodes).filter(([key, value]) => key != answer.vm_name)
         );
-        STRUCTURE.visjs.metadata.edge_node_mapping = Object.fromEntries(
-            Object.entries(STRUCTURE.visjs.metadata.edge_node_mapping).filter(([key, value]) => key != answer.vm_name)
+        STRUCTURE.metadata.nodes = Object.fromEntries(
+            Object.entries(STRUCTURE.metadata.nodes).filter(([key, value]) => key != answer.vm_name)
+        );
+        STRUCTURE.metadata.edge_node_mapping = Object.fromEntries(
+            Object.entries(STRUCTURE.metadata.edge_node_mapping).filter(([key, value]) => key != answer.vm_name)
         );
     }
 
@@ -706,8 +709,8 @@ class ManagerFlow {
         STRUCTURE.visjs.edges = Object.fromEntries(
             Object.entries(STRUCTURE.visjs.edges).filter(([key, value]) => key != answer.link_name)
         );
-        STRUCTURE.visjs.edge_node_mapping = Object.fromEntries(
-            Object.entries(STRUCTURE.visjs.edge_node_mapping).filter(([key, value]) => key != answer.link_name)
+        STRUCTURE.metadata.edge_node_mapping = Object.fromEntries(
+            Object.entries(STRUCTURE.metadata.edge_node_mapping).filter(([key, value]) => key != answer.link_name)
         );
     }
 
