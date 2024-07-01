@@ -207,11 +207,6 @@ class ManagerFlow {
                 },
             ],
         },
-        {
-            type: "confirm",
-            name: "vm_internet",
-            message: "¿Brindar acceso a internet a la máquina virtual?",
-        },
     ]
 
     #options_create_link = [
