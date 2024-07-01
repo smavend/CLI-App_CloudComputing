@@ -21,7 +21,6 @@ class ManagerFlow {
             choices: [
                 { name: "Listar slices", value: 1 },
                 { name: "Crear slice", value: 2 },
-                { name: "Editar slices", value: 3 },
                 { name: "Borrar slices", value: 4 },
                 { name: "Monitoreo de recursos", value: 5 },
                 { name: "Cambiar contraseña", value: 6 },
