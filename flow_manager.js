@@ -707,6 +707,9 @@ class ManagerFlow {
         STRUCTURE.visjs.edges = Object.fromEntries(
             Object.entries(STRUCTURE.visjs.edges).filter(([key, value]) => key != answer.link_name)
         );
+        STRUCTURE.visjs.edge_node_mapping = Object.fromEntries(
+            Object.entries(STRUCTURE.visjs.edge_node_mapping).filter(([key, value]) => key != answer.link_name)
+        );
     }
 
     async fetch_slices() {
@@ -737,12 +740,14 @@ class ManagerFlow {
             },
         })
         const result = await response.json();
-        if (result.slices.length === 0) return;
 
         this.#options_create_slice[0].choices = [
             { name: "Crear slice nuevo", value: 0 },
             { name: "Regresar", value: -1 }
         ];
+
+        if (result.slices.length === 0) return;
+
         for (let slice of result.slices) {
             this.#options_create_slice[0].choices.unshift(
                 { name: "Continuar con slice: " + slice.deployment.details.project_name, value: slice._id }
