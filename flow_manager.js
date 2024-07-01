@@ -173,9 +173,7 @@ class ManagerFlow {
             name: "vm_image",
             message: "Seleccione el sistema operativo de la máquina virtual: ",
             choices: [
-                { name: "Windows", value: "windows" },
-                { name: "Linux", value: "linux" },
-                { name: "MacOS", value: "macos" },
+                { name: "Cirros", value: "26a1ed6a-eed7-429b-9f0c-b0480a27af2d" },
             ],
         },
         {
@@ -536,7 +534,7 @@ class ManagerFlow {
     }
 
     async create_vms_and_links(SLICE, structure_created) {
-        let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {} } };
+        let STRUCTURE = structure_created ? structure_created : { visjs: { nodes: {}, edges: {} }, metadata: { edge_node_mapping: {}, nodes: {} } };
 
         let allow_delete_or_edit_vm = Object.keys(STRUCTURE.visjs.nodes).length > 0
         let allow_delete_links_available = Object.keys(STRUCTURE.visjs.edges).length > 0
@@ -670,10 +668,11 @@ class ManagerFlow {
         // UPDATE SLICE STRUCTURE
         STRUCTURE.visjs.nodes[new_vm.vm_name] = {
             label: new_vm.vm_name,
+        };
+        STRUCTURE.metadata.nodes[new_vm.vm_name] = {
             image: new_vm.vm_image,
             flavor: new_vm.flavor,
-            figure: "server",
-        };
+        }
         STRUCTURE.metadata.edge_node_mapping[new_vm.vm_name] = [];
     }
 
