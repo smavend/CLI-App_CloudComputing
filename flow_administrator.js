@@ -1,10 +1,13 @@
-import inquirer from "inquirer"
-import figlet from "figlet"
+import inquirer from "inquirer";
+import figlet from "figlet";
+import fetch from "node-fetch";
+import crypto from "crypto"; // Importa el módulo crypto para hashing
 
 class AdministratorFlow {
     constructor(TOKEN, URL) {
-        this.TOKEN = TOKEN
-        this.URL = URL
+        this.TOKEN = TOKEN;
+        this.URL = URL;
+        this._USERS = []; // Uso de convención de nombre con prefijo de guión bajo para indicar privacidad
     }
 
     #options_admin = [
@@ -19,7 +22,7 @@ class AdministratorFlow {
                 { name: "Cerrar sesión", value: 4 },
             ],
         },
-    ]
+    ];
 
     #options_create_user = [
         {
@@ -28,20 +31,20 @@ class AdministratorFlow {
             message: "Ingrese el nombre del usuario: ",
             validate: (answer) => {
                 if (!answer) {
-                    return "Ingrese un nombre de usuario"
+                    return "Ingrese un nombre de usuario";
                 }
-                return true
+                return true;
             },
         },
         {
             type: "password",
-            name: "contraseña",
+            name: "password",
             message: "Ingrese la contraseña del usuario: ",
             validate: (answer) => {
                 if (!answer) {
-                    return "Ingrese una contraseña"
+                    return "Ingrese una contraseña";
                 }
-                return true
+                return true;
             },
         },
         {
@@ -53,45 +56,46 @@ class AdministratorFlow {
                 { name: "Manager", value: "manager" },
             ],
         },
-    ]
+    ];
 
     async start() {
-        console.log(figlet.textSync("Administrador"))
+        console.log(figlet.textSync("Administrador"));
         while (true) {
-            let answer = await inquirer.prompt(this.#options_admin)
+            let answer = await inquirer.prompt(this.#options_admin);
             switch (answer.res) {
-                case 1: // show users
-                    await this.show_users()
-                    break
-                case 2: // create user
-                    await this.create_user()
-                    break
-                case 3: // edit user permissions
-                    break
-                case 4: // logout
-                    this.TOKEN = null
-                    console.clear()
-                    return
+                case 1:
+                    await this.show_users();
+                    break;
+                case 2:
+                    await this.post_user();
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    this.TOKEN = null;
+                    console.clear();
+                    return;
             }
         }
     }
 
-    async create_user() {
-        const answer = await inquirer.prompt(this.#options_create_user)
-
-        await this.post_user(new_user);
-        console.log("Usuario creado exitosamente")
-    }
-
     async show_users() {
         const response = await this.get_users();
-        // const response = { message: "success", users: this.#USERS }
-        console.log(`Se encontraron ${response.users.length} usuario(s)`)
-        console.table(response.users)
+        console.log(`Se encontraron ${response.users.length} usuario(s)`);
+        console.table(response.users);
     }
 
     async post_user() {
-        const ENDPOINT = `${this.URL}/users`
+        const userData = await inquirer.prompt(this.#options_create_user);
+        const hashedPassword = this.hashPassword(userData.password); // Calcula el hash SHA-256 de la contraseña
+
+        const new_user = {
+            username: userData.usuario,
+            passwordHash: hashedPassword, // Utiliza una variable diferente para el hash de la contraseña
+            role: userData.rol,
+        };
+
+        const ENDPOINT = `${this.URL}/users`;
         const response = await fetch(ENDPOINT, {
             method: "POST",
             headers: {
@@ -99,36 +103,43 @@ class AdministratorFlow {
                 Authorization: this.TOKEN,
             },
             body: JSON.stringify(new_user),
-        })
+        });
 
         if (response.status === 411) {
-            console.clear()
-            return
+            console.clear();
+            return;
         }
 
-        const data = await response.json()
-        console.log(data);
-        return data
+        const data = await response.json();
+        console.log("Usuario creado exitosamente:", data);
+        return data;
     }
 
     async get_users() {
-        const ENDPOINT = `${this.URL}/users`
+        const ENDPOINT = `${this.URL}/users`;
         const response = await fetch(ENDPOINT, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: this.TOKEN,
             },
-        })
+        });
 
         if (response.status === 411) {
-            await handleSessionTimeout()
-            return
+            await handleSessionTimeout();
+            return;
         }
 
-        const data = await response.json()
-        return data
+        const data = await response.json();
+        this._USERS = data.users; // Almacena los usuarios en el campo privado convencional
+        return data;
+    }
+
+    hashPassword(password) {
+        const hash = crypto.createHash("sha256");
+        hash.update(password, "utf8"); // Especifica la codificación UTF-8 explícitamente
+        return hash.digest("hex");
     }
 }
 
-export default AdministratorFlow
+export default AdministratorFlow;
