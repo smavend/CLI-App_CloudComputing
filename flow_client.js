@@ -78,16 +78,6 @@ class ClientFlow {
         const slices = await this.get_slices();
         if (slices.length === 0) console.log("No hay slices disponibles.")
         else console.table(slices);
-        while (true) {
-            let answer = await inquirer.prompt(this.#options_show_slices)
-            if (answer.res === 2) {
-                break
-            }
-            answer = await inquirer.prompt(this.#options_show_slice_details)
-
-            console.log(answer.slice_id)
-            console.log("|mostrando detalles de slice|")
-        }
     }
 
     async get_slices() {
